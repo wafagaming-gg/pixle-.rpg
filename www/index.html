@@ -98,6 +98,19 @@
 .abox .tabs button.on{background:#2e5aa8}
 #lobby{display:none;position:absolute;inset:0;z-index:45;background:radial-gradient(ellipse at 50% 0,#243257 0,#0a0e1c 70%);overflow:auto;touch-action:pan-y;padding:14px}
 #lobby.on{display:block}
+#wsel{display:none;position:absolute;inset:0;z-index:46;background:radial-gradient(ellipse at 50% 0,#243257 0,#0a0e1c 70%);overflow:auto;touch-action:pan-y;padding:14px}
+#wsel.on{display:block}
+.wgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px}
+@media (max-width:700px){.wgrid{grid-template-columns:1fr}}
+.wc{border:3px solid #556;background:rgba(10,14,28,.85);padding:14px 12px;cursor:pointer;font-size:12px;line-height:1.5;text-align:center;color:#fff;font-family:inherit}
+.wc:hover:not(.dis){border-color:#ffe066;box-shadow:0 0 10px #ffe066}
+.wc .ic{font-size:40px}.wc b{display:block;font-size:16px;margin:4px 0}.wc .tag{display:inline-block;font-size:10px;padding:1px 6px;border:1px solid currentColor;margin:2px 0 6px}
+.wc p{color:#bcd;font-size:11px;margin:4px 0 0}
+.wc.dis{opacity:.45;cursor:not-allowed}
+#wstat{text-align:center;font-size:12px;color:#ffd23f;margin-top:12px;min-height:16px}
+#lcodeBox{max-width:360px;margin:0 auto 10px}
+#lcodeBox input{display:block;width:100%;font:inherit;font-size:16px;letter-spacing:2px;text-transform:uppercase;text-align:center;color:#fff;background:#1a2036;border:2px solid #ffe066;padding:8px;-webkit-user-select:text;user-select:text;touch-action:auto}
+#lcodenote{color:#ff8a80;font-size:11px;text-align:center;min-height:14px;margin-top:4px;white-space:pre-wrap}
 .lbox{width:min(900px,100%);margin:0 auto}
 .lbox h2{font-size:22px;color:#ffe066;text-align:center;margin:6px 0 2px}
 .lbox .sub{text-align:center;color:#9ad;font-size:12px;margin-bottom:12px}
@@ -266,9 +279,26 @@ html,body{height:100dvh}
 <div id="hotbar"></div>
 <div id="dialog"><b id="dname"></b><span id="dtext"></span><span id="dhint">▼ E / Enter / Space / klik</span></div>
 <div id="err"></div><div id="toast"></div><div id="bossbar"><b id="bbn"></b><div class="bbb"><i id="bbi"></i></div></div><div id="shop"></div>
+<div id="wsel"><div class="lbox">
+  <h2>🏰 Pilih Server</h2>
+  <div class="sub">Pixel Open World RPG</div>
+  <div class="wgrid">
+    <button id="wc1" class="wc" type="button" style="color:#9fe8a0"><div class="ic">🏠</div><b>1 · Dunia Sendiri</b><span class="tag">OFFLINE · LOKAL</span><p>Main sendirian. Data tersimpan di perangkat ini. Tidak perlu akun.</p></button>
+    <button id="wc2" class="wc" type="button" style="color:#9fe8ff"><div class="ic">🌍</div><b>2 · Server Publik</b><span class="tag">ONLINE · AKUN</span><p>Langsung masuk dan bertemu pemain lain tanpa kode. Progres tersimpan di akun (cloud).</p></button>
+    <button id="wc3" class="wc" type="button" style="color:#ffb86b"><div class="ic">🔒</div><b>3 · Server Privat</b><span class="tag">ONLINE · AKUN · KODE</span><p>Hanya untuk yang punya kode dari Supabase. Bertemu pemain yang memakai kode yang sama.</p></button>
+  </div>
+  <div id="wstat"></div>
+</div></div>
 <div id="lobby"><div class="lbox">
   <h2>🏰 Lobi</h2>
+  <div class="sub" id="lsrv" style="color:#ffe066;font-size:13px;margin-bottom:2px"></div>
   <div class="sub" id="lwho"></div>
+  <div id="lcodeBox" style="display:none">
+    <div class="sub" style="color:#fff;margin-bottom:4px">Kode Server Privat (dari Supabase)</div>
+    <input id="lcode" type="text" maxlength="20" placeholder="MASUKKAN KODE" autocomplete="off" autocapitalize="characters" spellcheck="false">
+    <div id="lcodenote"></div>
+    <textarea id="lsql" readonly style="display:none;width:100%;height:120px;margin-top:6px;font:inherit;font-size:10px;color:#fff;background:#1a2036;border:2px solid #fff;padding:6px;-webkit-user-select:text;user-select:text;touch-action:auto"></textarea>
+  </div>
   <div id="lnameBox"><div class="sub" style="color:#fff;margin-bottom:4px">Nama karakter (tampil di atas kepala)</div>
     <input id="lname" class="lin" type="text" maxlength="14" placeholder="3-14 huruf/angka" autocomplete="off">
     <div id="lnamenote"></div></div>
@@ -282,10 +312,11 @@ html,body{height:100dvh}
     <div class="hero"><canvas id="lprevN" class="pv"></canvas><div class="hi"><b id="lhname2"></b><span>Atur penampilan sebelum mulai</span><button id="lcust" class="lbtn sec" type="button">🎨 Kustomisasi Karakter</button></div></div>
     <div class="sub" style="font-size:14px;color:#fff">Pilih perananmu</div><div id="lcards"></div>
     <button id="lgo" class="lbtn" type="button" disabled>Pilih peran dulu</button></div>
+  <button id="lback" class="lbtn sec" type="button" style="margin-top:18px">← Pilih server lain</button>
 </div></div>
 <div id="auth"><div class="abox">
   <h2>Pixel Open World RPG</h2>
-  <p>Masuk dengan email agar progres tersimpan di cloud dan bisa dimainkan di perangkat lain dengan data yang sama.</p>
+  <p>Server Publik &amp; Privat butuh akun. Masuk dengan email agar progres tersimpan di cloud dan bisa dimainkan di perangkat lain dengan data yang sama.</p>
   <div class="tabs"><button id="tabIn" class="on" type="button">Masuk</button><button id="tabUp" type="button">Daftar</button></div>
   <div id="areset" style="display:none">
     <div style="color:#ffe066;font-size:15px;margin-bottom:6px">Atur ulang kata sandi</div>
@@ -308,7 +339,7 @@ html,body{height:100dvh}
     <input id="apass2" type="password" placeholder="Ulangi kata sandi" autocomplete="new-password" style="display:none">
     <div id="aerr"></div>
     <button id="asubmit" type="button">Masuk</button>
-    <button id="aguest" type="button" class="sec">Main tanpa akun</button>
+    <button id="aguest" type="button" class="sec">← Pilih server lain</button>
     <button id="aforgot" type="button" class="sec">Lupa password?</button>
     <div id="anote" style="color:#ffd23f;font-size:11px;margin-top:6px"></div>
     <textarea id="asql" readonly style="display:none;width:100%;height:120px;margin-top:6px;font:inherit;font-size:10px;color:#fff;background:#1a2036;border:2px solid #fff;padding:6px;-webkit-user-select:text;user-select:text;touch-action:auto"></textarea>
@@ -317,7 +348,7 @@ html,body{height:100dvh}
 <div id="acct"><div class="abox">
   <h2>Akun</h2>
   <p id="acctMail"></p>
-  <button id="acctLobby" class="sec" type="button">Ke Lobi</button>
+  <button id="acctLobby" class="sec" type="button">Ganti server / Ke Lobi</button>
   <button id="acctOut" class="sec" type="button">Keluar</button>
   <input id="acctPw" type="password" placeholder="Kata sandi untuk konfirmasi" style="display:none" autocomplete="current-password">
   <button id="acctDel" class="dng" type="button">Hapus akun &amp; mulai dari awal</button>
@@ -2412,6 +2443,7 @@ const DIRS=[[0,1],[0,-1],[-1,0],[1,0]];   // bawah, atas, kiri, kanan
 const WALK=[0,1,0,3];
 const LEGACY_KEY='pixel_rpg_save_v2';         // save lama (sebelum ada akun)
 const ACC_KEY='pixel_rpg_accounts_v1', SESSION_KEY='pixel_rpg_session_v1', SAVE_PFX='pixel_rpg_save_acc:';
+const W1_KEY='pixel_rpg_save_server1_local_v1';   // Server 1 (Dunia Sendiri): disimpan di localStorage perangkat, tanpa akun
 let SAVE_KEY=null;                             // diisi setelah login
 const SAVE_FIELDS=['v2','x','y','hp','maxHp','mp','maxMp','lvl','xp','coins','weapon','sel','hasBow','sp','qdone','qact','st','bag','land','crops','animals','homes','hf','selSeed','selF','vis','role','bhp','bmp','food','name','look','stats','pts','eq','dg','bk','gear','up','w','w2','wd','sb','ins','rsp','cos','pet','tax','mk'];
 const WFIELDS=SAVE_FIELDS.filter(k=>!['role','name','look','w','w2','wd','sb','bag','gear','up','ins','rsp','cos','pet','mk'].includes(k));   // data yang terpisah per dunia
@@ -6455,6 +6487,10 @@ const newSalt=()=>{const u=new Uint8Array(16);(window.crypto&&crypto.getRandomVa
 const authOpen=()=>$('auth').classList.contains('on')||$('acct').classList.contains('on')||$('cust').classList.contains('on');
 window.__ls=ls;
 let curMail=null,started=false;
+/* ---- 3 server: 'local' = Dunia Sendiri (lokal), 'pub' = Server Publik, 'priv' = Server Privat (kode dari Supabase) ---- */
+const SRV={kind:'local',code:'',ch:'',busy:false,retry:0,timer:0};
+const SRV_NAME={local:'🏠 Server 1 · Dunia Sendiri (lokal, tanpa akun)',pub:'🌍 Server 2 · Publik (langsung bertemu pemain lain)',priv:'🔒 Server 3 · Privat (butuh kode)'};
+const LASTCODE_KEY='pixel_rpg_last_priv_code';
 
 function startGame(mail){
   curMail=mail;SAVE_KEY=SAVE_PFX+mail;ls.set(SESSION_KEY,mail);
@@ -6504,7 +6540,10 @@ function showPick(){
 }
 function openLobby(){
   $('lobby').classList.add('on');chgArm=false;$('lchgnote').textContent='';$('lchg').textContent='Ganti peran (mulai ulang karakter)';$('lchg').classList.remove('dng');
-  $('lwho').textContent=curMail?'Masuk sebagai '+curMail:'Mode tanpa akun';
+  $('lwho').textContent=curMail?'Masuk sebagai '+curMail:'Tanpa akun · progres tersimpan di perangkat ini';
+  $('lsrv').textContent=SRV_NAME[SRV.kind];
+  $('lcodeBox').style.display=SRV.kind==='priv'?'block':'none';$('lcodenote').textContent='';$('lsql').style.display='none';
+  if(SRV.kind==='priv'&&!$('lcode').value){try{$('lcode').value=ls.get(LASTCODE_KEY)||'';}catch(e){}}
   let saved=null;
   try{const sv=SAVE_KEY&&JSON.parse(ls.get(SAVE_KEY)||'null');if(sv&&sv.p&&ROLES[sv.p.role])saved=sv.p;}catch(e){}
   lobbySaved=saved;
@@ -6522,15 +6561,31 @@ $('lcust2').onclick=()=>openCust(lobbySaved.look,heroName(),l=>{
   try{const sv=JSON.parse(ls.get(SAVE_KEY)||'null');if(sv&&sv.p){sv.p.look=l;sv.ts=Date.now();ls.set(SAVE_KEY,JSON.stringify(sv));}}catch(e){}
   paintHeroS();
 });
-function enterGame(){
-  if(started)return;
+let entering=false;
+async function enterGame(){
+  if(started||entering)return;
   if(!lobbyKnownName()){
     const n=cleanName($('lname').value);
     if(!n){$('lnamenote').textContent=NAME_RULE+'.';$('lname').focus();return;}
-    chosenName=n;
-    if(curMail){const acc=accounts();if(acc[curMail]){acc[curMail].name=n;putAccounts(acc);}}
   }
-  started=true;$('lobby').classList.remove('on');bootGame();requestAnimationFrame(frame);
+  entering=true;
+  try{
+    if(SRV.kind==='priv'){   // Server Privat: kode harus terdaftar di Supabase
+      const code=String($('lcode').value||'').toUpperCase().replace(/[^A-Z0-9_-]/g,'').slice(0,20),note=$('lcodenote');
+      note.textContent='';$('lsql').style.display='none';
+      if(code.length<4){note.textContent='Masukkan kode server privat (min. 4 karakter).';$('lcode').focus();return;}
+      note.textContent='Memeriksa kode...';
+      const r=await checkPrivCode(code);
+      if(!r.ok){note.textContent=r.msg;if(r.sql){$('lsql').value='-- Salin semua ini ke Supabase > SQL Editor > New query > Run, lalu coba lagi\n'+SQL_CODES;$('lsql').style.display='block';}return;}
+      note.textContent='';SRV.code=code;SRV.ch='PRIV-'+code;ls.set(LASTCODE_KEY,code);
+    }else if(SRV.kind==='pub'){SRV.code='';SRV.ch='PUBLIK';}
+    if(!lobbyKnownName()){
+      const n=cleanName($('lname').value);chosenName=n;
+      if(curMail){const acc=accounts();if(acc[curMail]){acc[curMail].name=n;putAccounts(acc);}}
+    }
+    started=true;$('lobby').classList.remove('on');bootGame();requestAnimationFrame(frame);
+    srvConnect();   // server 2/3: langsung masuk & bertemu pemain lain
+  }finally{entering=false;}
 }
 /* ---- panel kustomisasi ---- */
 let draft=null,custBase=null,custCb=null,custDir=0,custT=0,custTimer=null;
@@ -6703,11 +6758,94 @@ async function doAuth(){
 $('asubmit').addEventListener('click',doAuth);
 ['aemail','aname','apass','apass2'].forEach(i=>$(i).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();doAuth();}}));
 
-$('aguest').onclick=()=>{curMail=null;SAVE_KEY=persist?LEGACY_KEY:null;$('auth').classList.remove('on');openLobby();};
-if(!persist)$('anote').textContent='Penyimpanan browser tidak tersedia di sini: progres hanya bertahan selama halaman terbuka. Buka file ini langsung di browser agar tersimpan.';
+$('aguest').onclick=()=>{$('auth').classList.remove('on');openWsel();};
+if(!persist)$('anote').textContent='Penyimpanan browser tidak tersedia di sini: progres Server 1 hanya bertahan selama halaman terbuka. Buka file ini langsung di browser agar tersimpan.';
+/* ---- layar pilih server ---- */
+const BOOT={sb:null,user:null,p:null};
+function updWstat(msg){
+  const s=$('wstat');
+  if(msg){s.textContent=msg;return;}
+  if(!cloudOn())s.textContent='Server 2 & 3 belum aktif (SUPABASE_URL / SUPABASE_KEY belum diisi).';
+  else if(BOOT.user)s.textContent='Akunmu: '+normMail(BOOT.user.email)+' (sudah masuk)';
+  else if(BOOT.p)s.textContent='Memeriksa koneksi & sesi login...';
+  else s.textContent='Server 2 & 3 membutuhkan akun. Kamu akan diminta masuk/daftar.';
+  [$('wc2'),$('wc3')].forEach(b=>b.classList.toggle('dis',!cloudOn()));
+}
+function openWsel(){
+  SRV.kind='local';SRV.code='';SRV.ch='';curMail=null;SAVE_KEY=null;CL.uid=null;   // putus dari cloud supaya data lokal Server 1 tidak menimpa save akun
+  $('lobby').classList.remove('on');$('wsel').classList.add('on');updWstat();
+}
+async function pickServer(kind){
+  if(started||entering)return;
+  if(kind==='local'){
+    SRV.kind='local';curMail=null;SAVE_KEY=persist?W1_KEY:null;CL.uid=null;
+    $('wsel').classList.remove('on');openLobby();return;
+  }
+  if(!cloudOn()){updWstat('Server online belum aktif: isi SUPABASE_URL & SUPABASE_KEY di index.html.');return;}
+  SRV.kind=kind;
+  $('wsel').classList.remove('on');
+  if(BOOT.p){updWstat('Memeriksa koneksi & sesi login...');$('wsel').classList.add('on');await BOOT.p;$('wsel').classList.remove('on');}
+  if(SRV.kind!==kind)return;
+  if(BOOT.user&&BOOT.sb){
+    try{await cloudStart(BOOT.sb,BOOT.user,'');return;}   // sudah login: langsung ke lobi
+    catch(e){BOOT.user=null;}
+  }
+  setMode('in');$('aerr').textContent='';$('auth').classList.add('on');   // belum login: masuk / daftar dulu
+  if(!BOOT.sb)$('anote').textContent='Memuat server...';
+}
+$('wc1').onclick=()=>pickServer('local');$('wc2').onclick=()=>pickServer('pub');$('wc3').onclick=()=>pickServer('priv');
+$('lback').onclick=async()=>{
+  if(started)return;
+  if(CL.uid){try{await cloudPush();}catch(e){}}
+  openWsel();
+};
+/* kode server privat: tabel rpg_server_codes di Supabase, dicek lewat fungsi rpg_check_code (daftar kode tidak bisa dibaca pemain) */
+const SQL_CODES=`create table if not exists public.rpg_server_codes (
+  code text primary key check (code = upper(code) and code ~ '^[A-Z0-9_-]{4,20}$'),
+  note text,
+  active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+alter table public.rpg_server_codes enable row level security;
+revoke all on public.rpg_server_codes from anon, authenticated;
+create or replace function public.rpg_check_code(c text) returns boolean
+language sql security definer set search_path = public stable as $$
+  select exists(select 1 from public.rpg_server_codes where code = upper(trim(c)) and active);
+$$;
+revoke all on function public.rpg_check_code(text) from public, anon;
+grant execute on function public.rpg_check_code(text) to authenticated;
+-- Buat kode server privat (HURUF BESAR/ANGKA, 4-20 karakter). Ulangi baris ini untuk tiap kode baru,
+-- atau tambah lewat Table Editor > rpg_server_codes. Matikan kode dengan active = false.
+insert into public.rpg_server_codes (code, note) values ('SERVER001', 'kode contoh') on conflict do nothing;
+notify pgrst, 'reload schema';
+`;
+async function checkPrivCode(code){
+  const sb=CL.sb||BOOT.sb||await sbReady();
+  if(!sb)return{ok:false,msg:'Tidak bisa terhubung ke Supabase. Cek internet lalu coba lagi.'};
+  try{
+    const r=await Promise.race([sb.rpc('rpg_check_code',{c:code}),new Promise((_,rj)=>setTimeout(()=>rj(new Error('waktu habis')),12000))]);
+    if(r.error){
+      const m=String(r.error.message||'');
+      if(/rpg_check_code|function|schema cache|does not exist|not found|permission/i.test(m+(r.error.code||'')))
+        return{ok:false,sql:true,msg:'Fitur kode privat belum disiapkan di Supabase. Jalankan SQL di bawah, lalu coba lagi.'};
+      return{ok:false,msg:'Gagal memeriksa kode: '+m};
+    }
+    return r.data===true?{ok:true}:{ok:false,msg:'Kode salah atau sudah tidak aktif.'};
+  }catch(e){return{ok:false,msg:'Gagal memeriksa kode: '+(e&&e.message||e)};}
+}
+/* sambung otomatis ke server 2/3 setelah masuk game (dan sambung ulang bila terputus) */
+function srvConnect(){
+  if(SRV.kind==='local'||!SRV.ch||!started)return;
+  clearTimeout(SRV.timer);
+  if(MPon||MPsb||SRV.busy)return;
+  SRV.busy=true;mpUi();
+  const retry=()=>{SRV.busy=false;if(MPon)return;SRV.retry=Math.min(SRV.retry+1,5);mpUi();SRV.timer=setTimeout(srvConnect,Math.min(15000,2500*SRV.retry));};
+  const guard=setTimeout(()=>{if(SRV.busy&&!MPon){retry();}},30000);
+  mpSb(false,SRV.ch,ok=>{clearTimeout(guard);if(!SRV.busy)return;if(ok){SRV.busy=false;SRV.retry=0;toast('🌐 Terhubung ke '+(SRV.kind==='pub'?'Server Publik':'Server Privat '+SRV.code));mpUi();}else retry();});
+}
 // panel akun
 function paintAcct(){
-  if(!curMail){$('acctMail').textContent='Mode tanpa akun. Keluar lalu daftar untuk menyimpan progres.';}
+  if(!curMail){$('acctMail').textContent='Server 1 · Dunia Sendiri: progres tersimpan di perangkat ini (tanpa akun). Pilih Server 2/3 untuk main online dengan akun.';}
   else $('acctMail').textContent='Masuk sebagai: '+curMail+(P.name?' \u00b7 Karakter: '+P.name:'')+' \u00b7 \u2601 '+(!CL.uid?'tanpa cloud':CL.last==='ok'?'Cloud-save AKTIF':CL.last?'Cloud-save GAGAL: '+CL.last:'sedang mencoba menyimpan...');
   let t=$('acctSql');
   if(!t){t=document.createElement('textarea');t.id='acctSql';t.readOnly=true;
@@ -6809,7 +6947,7 @@ async function cloudDel(){
 }
 async function cloudStart(sb,user,name){
   const mail=normMail(user.email),key=SAVE_PFX+mail;
-  CL.sb=sb;CL.uid=user.id;
+  CL.sb=sb;CL.uid=user.id;BOOT.sb=sb;BOOT.user=user;
   const nm=cleanName(name||(user.user_metadata&&user.user_metadata.name)||'');
   const acc=accounts();acc[mail]=Object.assign(acc[mail]||{},nm?{name:nm}:{});putAccounts(acc);
   let loc=null;try{loc=JSON.parse(ls.get(key)||'null');}catch(e){}
@@ -6863,18 +7001,14 @@ async function cloudAuth(sb,mail,pw,cname){
   const u=(res.data.session&&res.data.session.user)||res.data.user;
   await cloudStart(sb,u,mode==='up'?cname:'');
 }
-async function cloudBoot(m){
-  setMode('in');$('auth').classList.add('on');
-  $('anote').textContent='Memeriksa sesi...';
+async function cloudBoot(){   // cek sesi login secara diam-diam; layar pilih server tetap tampil
   const sb=await sbReady();
-  if(!sb){
-    $('anote').textContent='Tidak ada koneksi ke server. Progres hanya disimpan di cloud, jadi butuh internet untuk masuk.';return;
-  }
+  if(!sb)return;
+  BOOT.sb=sb;
   try{
     const r=await sb.auth.getSession(),u=r&&r.data&&r.data.session&&r.data.session.user;
-    if(u){await cloudStart(sb,u,'');return;}
-  }catch(e){$('aerr').textContent='Gagal: '+(e&&e.message||e);}
-  $('anote').textContent='';ls.del(SESSION_KEY);
+    if(u)BOOT.user=u;else ls.del(SESSION_KEY);
+  }catch(e){}
 }
 document.addEventListener('visibilitychange',()=>{if(document.hidden){saveGame();cloudPush();}});
 /* ---- lupa password: kode verifikasi dikirim lewat email ---- */
@@ -7003,7 +7137,7 @@ function pvpToggle(){
 const MPLIBS=['https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js','https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js'];
 {const s=document.createElement('style');s.textContent='#mp{display:none;position:absolute;inset:0;z-index:48;background:rgba(10,14,28,.85);align-items:center;justify-content:center}#mp.on{display:flex}#mp .abox{touch-action:auto}#mpmsg{color:#ffe066;font-size:12px;min-height:34px;white-space:pre-wrap;margin-bottom:6px}#mpchat{position:absolute;left:8px;bottom:64px;width:min(270px,62vw);z-index:15;pointer-events:none;font-size:12px;text-shadow:1px 1px #000}#mpchat div{background:rgba(10,14,28,.7);padding:2px 6px;margin-top:2px;word-break:break-word}#mpchat input{display:none;pointer-events:auto;width:100%;font:inherit;font-size:14px;color:#fff;background:#1a2036;border:2px solid #fff;padding:6px;margin-top:4px;user-select:text;-webkit-user-select:text;touch-action:auto}#mpchat.open input{display:block}@media (pointer:coarse){#mpchat{bottom:250px}}';document.head.appendChild(s);}
 const mpPanel=document.createElement('div');mpPanel.id='mp';
-mpPanel.innerHTML='<div class="abox"><h2>\ud83c\udf10 Main Online</h2><p>Mainkan dunia yang sama bersama teman; musuh di dunia luar dilihat & dilawan bersama. Main sendiri tetap bisa offline.</p><div id="mpmsg"></div><div id="mproom" style="display:none"><input id="mpRoomName" maxlength="20" placeholder="Nama ruangan (kosong = umum)" autocomplete="off"><button id="mpRoomGo" type="button">Masuk Online</button><p style="font-size:11px">Semua orang yang membuka link game ini dan masuk ke nama ruangan yang sama akan bertemu di dunia yang sama.</p></div><div id="mpoff"><button id="mpHost" type="button">Buat Ruangan</button><input id="mpCode" maxlength="5" placeholder="Kode ruangan teman" autocomplete="off" style="text-transform:uppercase;margin-top:8px"><button id="mpJoin" class="sec" type="button">Gabung</button><button id="mpMan" class="sec" type="button" style="margin-top:8px">Cara manual (tanpa server)</button><div id="mpmanbox" style="display:none"><textarea id="mpTa" rows="4" placeholder="Kode undangan/jawaban tampil & ditempel di sini" style="width:100%;font:inherit;font-size:11px;color:#fff;background:#1a2036;border:2px solid #fff;padding:6px;margin-top:6px;user-select:text;-webkit-user-select:text;touch-action:auto"></textarea><button id="mpM1" type="button">1. Buat undangan (host)</button><button id="mpM2" class="sec" type="button">2. Balas undangan (teman)</button><button id="mpM3" class="sec" type="button">3. Sambungkan jawaban (host)</button></div></div><button id="mpLeave" class="dng" type="button" style="display:none">Keluar dari ruangan</button><button id="mpX" class="sec" type="button">Tutup</button></div>';
+mpPanel.innerHTML='<div class="abox"><h2>\ud83c\udf10 Server Online</h2><p>Musuh di dunia luar dilihat & dilawan bersama pemain lain di server ini. Untuk pindah server, pakai tombol \ud83d\udc64 lalu "Ganti server".</p><div id="mpmsg"></div><div id="mproom" style="display:none"><input id="mpRoomName" maxlength="20" placeholder="Nama ruangan (kosong = umum)" autocomplete="off"><button id="mpRoomGo" type="button">Masuk Online</button><p style="font-size:11px">Semua orang yang membuka link game ini dan masuk ke nama ruangan yang sama akan bertemu di dunia yang sama.</p></div><div id="mpoff"><button id="mpHost" type="button">Buat Ruangan</button><input id="mpCode" maxlength="5" placeholder="Kode ruangan teman" autocomplete="off" style="text-transform:uppercase;margin-top:8px"><button id="mpJoin" class="sec" type="button">Gabung</button><button id="mpMan" class="sec" type="button" style="margin-top:8px">Cara manual (tanpa server)</button><div id="mpmanbox" style="display:none"><textarea id="mpTa" rows="4" placeholder="Kode undangan/jawaban tampil & ditempel di sini" style="width:100%;font:inherit;font-size:11px;color:#fff;background:#1a2036;border:2px solid #fff;padding:6px;margin-top:6px;user-select:text;-webkit-user-select:text;touch-action:auto"></textarea><button id="mpM1" type="button">1. Buat undangan (host)</button><button id="mpM2" class="sec" type="button">2. Balas undangan (teman)</button><button id="mpM3" class="sec" type="button">3. Sambungkan jawaban (host)</button></div></div><button id="mpLeave" class="dng" type="button" style="display:none">Keluar dari ruangan</button><button id="mpX" class="sec" type="button">Tutup</button></div>';
 document.body.appendChild(mpPanel);
 const mpChat=document.createElement('div');mpChat.id='mpchat';mpChat.innerHTML='<input id="mpin" maxlength="80" placeholder="Ketik pesan, Enter kirim" autocomplete="off">';document.body.appendChild(mpChat);
 const MPbtn=document.createElement('button'),MPchatBtn=document.createElement('button');
@@ -7011,10 +7145,13 @@ MPbtn.type=MPchatBtn.type='button';MPchatBtn.textContent='\ud83d\udcac';MPchatBt
 const PVPbtn=document.createElement('button');PVPbtn.type='button';PVPbtn.style.display='none';PVPbtn.title='Duel antar pemain (PvP)';PVPbtn.onclick=pvpToggle;
 {const t=$('tools')||document.body;t.appendChild(MPchatBtn);t.appendChild(PVPbtn);t.appendChild(MPbtn);}
 const mpMsg=s=>{$('mpmsg').textContent=s;};
-function mpUi(){const n=MPpeers.size+1;MPbtn.textContent=MPon?'\ud83c\udf10 '+MPcode+' ('+n+')':'\ud83c\udf10 Online';
-  $('mpoff').style.display=(!MProom&&!(MPon&&!MPhost))?'block':'none';$('mproom').style.display=(MProom&&!MPon)?'block':'none';$('mpLeave').style.display=MPon?'block':'none';MPchatBtn.style.display=MPon?'':'none';
+function mpUi(){const n=MPpeers.size+1,lbl=SRV.kind==='pub'?'Publik':SRV.kind==='priv'?'Privat '+SRV.code:'';
+  MPbtn.style.display=SRV.kind==='local'?'none':'';
+  MPbtn.textContent=MPon?'\ud83c\udf10 '+lbl+' ('+n+')':'\ud83c\udf10 Menyambung...';
+  $('mpoff').style.display='none';$('mproom').style.display='none';$('mpLeave').style.display='none';MPchatBtn.style.display=MPon?'':'none';
   if(!MPon)PVP.on=false;PVPbtn.style.display=(MPon&&!MPnr)?'':'none';PVPbtn.textContent=PVP.on?'\u2694\ufe0f PvP ON':'\u2694\ufe0f PvP';PVPbtn.style.background=PVP.on?'#7a1f2b':'';PVPbtn.style.borderColor=PVP.on?'#ff5a5a':'';
-  if(MPon)mpMsg(MPhost?'Kode ruangan: '+MPcode+'\nBagikan kode ini ke temanmu.':'Terhubung ke ruangan '+MPcode+'.');else mpChat.classList.remove('open');}
+  if(MPon)mpMsg(SRV.kind==='priv'?'Terhubung ke Server Privat.\nKode: '+SRV.code+'\nPemain online: '+n+'\nBagikan kode ini hanya ke temanmu (mereka tetap butuh akun).':'Terhubung ke Server Publik.\nPemain online: '+n+'\nSiapa saja yang masuk Server Publik akan langsung bertemu denganmu.');
+  else{mpChat.classList.remove('open');if(SRV.kind!=='local')mpMsg('Menyambungkan ke server...\nGame tetap bisa dimainkan; akan tersambung otomatis.');}}
 function mpLoad(cb){
   if(window.Peer)return cb();
   if(!navigator.onLine){mpMsg('Tidak ada internet. Main online butuh koneksi; mode offline tetap bisa dimainkan.');return;}
@@ -7150,21 +7287,22 @@ function mpSbOut(m){
   if(!MPsb)return;const now=performance.now();
   if(m.t==='s'){const k=[m.x,m.y,m.d,m.m,m.i,m.l,m.dy,m.g,m.w,m.bw,m.pv,m.hp,m.mh,JSON.stringify(m.gr)].join();if(k===sbKey&&now-sbLast<2000)return;if(now-sbLast<250)return;sbKey=k;sbLast=now;}
   MPsb.ch.send({type:'broadcast',event:'m',payload:Object.assign({},m,{f:MPsb.id,g:myG()})}).catch(()=>{});}
-function mpSb(create,code){
+function mpSb(create,code,done){
   if(create)code=Array.from({length:5},()=>'ABCDEFGHJKMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*31)]).join('');
   mpMsg('Menghubungkan ke Supabase...');
+  let fin=false;const end=(ok,msg)=>{if(fin)return;fin=true;if(done)done(ok,msg);};
   mpLoadSb(()=>{
-    let sb;try{sb=sbShared();}catch(e){mpMsg('Konfigurasi Supabase salah (cek URL dan key).');return;}
+    let sb;try{sb=sbShared();}catch(e){mpMsg('Konfigurasi Supabase salah (cek URL dan key).');end(false,'Konfigurasi Supabase salah');return;}
     const id=Math.random().toString(36).slice(2,10);MPid=id;
     const ch=sb.channel('pxrpg-'+code,{config:{broadcast:{self:false},presence:{key:id}}});
     MPsb={sb,ch,id};sbKey='';sbLast=0;let ok=false;
-    const to=setTimeout(()=>{if(!ok){mpCleanup();mpMsg('Gagal terhubung ke Supabase. Periksa URL, key, dan internet.');}},15000);
+    const to=setTimeout(()=>{if(!ok){mpCleanup();mpMsg('Gagal terhubung ke Supabase. Periksa URL, key, dan internet.');end(false,'Gagal terhubung');}},15000);
     ch.on('broadcast',{event:'m'},({payload})=>mpMsgIn('sb',payload))
       .on('presence',{event:'leave'},({key})=>{MPpeers.delete(key);mpUi();})
       .subscribe(st=>{
-        if(st==='SUBSCRIBED'){ok=true;clearTimeout(to);try{ch.track({});}catch(e){}MPon=true;MPhost=false;MPcode=code;mpUi();}
-        else if((st==='CHANNEL_ERROR'||st==='TIMED_OUT')&&!ok){clearTimeout(to);mpCleanup();mpMsg('Gagal ('+st+'). Cek URL dan key Supabase.');}
-        else if(st==='CLOSED'&&ok&&MPsb&&MPsb.ch===ch){toast('\ud83c\udf10 Koneksi terputus');mpCleanup();}
+        if(st==='SUBSCRIBED'){ok=true;clearTimeout(to);try{ch.track({});}catch(e){}MPon=true;MPhost=false;MPcode=code;mpUi();end(true);}
+        else if((st==='CHANNEL_ERROR'||st==='TIMED_OUT')&&!ok){clearTimeout(to);mpCleanup();mpMsg('Gagal ('+st+'). Cek URL dan key Supabase.');end(false,'Gagal ('+st+')');}
+        else if(st==='CLOSED'&&ok&&MPsb&&MPsb.ch===ch){toast('\ud83c\udf10 Koneksi terputus, menyambung ulang...');mpCleanup();if(SRV.kind!=='local'&&started){clearTimeout(SRV.timer);SRV.timer=setTimeout(srvConnect,3000);}}
       });
   });}
 if(SUPABASE_URL&&SUPABASE_KEY)$('mpMan').style.display='none';
@@ -7421,11 +7559,10 @@ MPchatBtn.onclick=()=>{mpChat.classList.toggle('open');if(mpChat.classList.conta
 $('mpin').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'){mpSay($('mpin').value);$('mpin').value='';}else if(e.key==='Escape'){mpChat.classList.remove('open');$('mpin').blur();}});
 mpUi();
 
-// masuk otomatis bila sesi tersimpan, kalau tidak tampilkan layar login
-{const m=ls.get(SESSION_KEY);
- if(cloudOn())cloudBoot(m);
- else if(m&&accounts()[m])startGame(m);
- else{ls.del(SESSION_KEY);const first=!Object.keys(accounts()).length;setMode(first?'up':'in');$('auth').classList.add('on');}}
+// layar pertama: pilih server (1 lokal, 2 publik, 3 privat). Sesi login dicek di latar belakang.
+{$('wsel').classList.add('on');
+ if(cloudOn()){BOOT.p=cloudBoot().then(()=>{BOOT.p=null;updWstat();},()=>{BOOT.p=null;updWstat();});}
+ updWstat();}
 })();
 </script>
 </body>
