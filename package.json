@@ -1,0 +1,13 @@
+{
+  "name": "pixel-open-world-rpg",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pixel Open World RPG (APK via Capacitor)",
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/core": "^6.1.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2"
+  }
+}
