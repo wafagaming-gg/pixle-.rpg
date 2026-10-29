@@ -1,13 +1,44 @@
 {
-  "name": "pixel-open-world-rpg",
+  "name": "pixel-rpg",
   "version": "1.0.0",
-  "private": true,
-  "description": "Pixel Open World RPG (APK via Capacitor)",
+  "description": "Pixel Open World RPG",
+  "main": "electron/main.js",
+  "author": "Pixel RPG",
+  "scripts": {
+    "serve": "npx http-server www -p 8080 -c-1",
+    "android:add": "npx cap add android",
+    "android:sync": "npx cap sync android",
+    "android:open": "npx cap open android",
+    "android:apk": "npx cap sync android && cd android && gradlew assembleDebug",
+    "electron": "electron .",
+    "dist:win": "electron-builder --win portable nsis",
+    "dist:mac": "electron-builder --mac",
+    "dist:linux": "electron-builder --linux AppImage"
+  },
   "dependencies": {
-    "@capacitor/android": "^6.1.2",
-    "@capacitor/core": "^6.1.2"
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/core": "^6.0.0"
   },
   "devDependencies": {
-    "@capacitor/cli": "^6.1.2"
+    "@capacitor/cli": "^6.0.0",
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.pixelrpg.game",
+    "productName": "Pixel RPG",
+    "files": [
+      "electron/**",
+      "www/**"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "icon": "www/icons/icon-512.png"
+    },
+    "linux": {
+      "icon": "www/icons/icon-512.png"
+    }
   }
 }

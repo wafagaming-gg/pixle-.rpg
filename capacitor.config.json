@@ -1,7 +1,12 @@
 {
   "appId": "com.pixelrpg.game",
-  "appName": "Pixel Open World RPG",
+  "appName": "Pixel RPG",
   "webDir": "www",
-  "server": { "androidScheme": "https" },
-  "android": { "backgroundColor": "#0a0e1c" }
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": true
+  }
 }
