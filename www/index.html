@@ -668,10 +668,10 @@ function addArena(s){
    ========================================================= */
 const EST_T=[
  {n:'Rumah Biasa',w:3,h:2,p:150000,ex:20,rh:12,wall:'#d9c7a0',roof:'#a86a3a',d:'Rumah mungil yang sederhana.'},
- {n:'Rumah Biasa-Sedang',w:4,h:2,p:250000,ex:22,rh:14,wall:'#e2d2b0',roof:'#c0504d',d:'Ada beranda, kotak bunga & cerobong.'},
- {n:'Rumah Sedang',w:5,h:2,p:400000,ex:28,rh:20,wall:'#e8dcc4',roof:'#3d6fb5',d:'Atap tinggi, jendela atap & dua cerobong.'},
- {n:'Rumah Sedang-Besar',w:6,h:3,p:700000,ex:30,rh:22,wall:'#d8d4cc',roof:'#7a3aa8',d:'Dua lantai dengan balkon & sayap samping.'},
- {n:'Mansion',w:8,h:3,p:2000000,ex:38,rh:28,wall:'#f0ece0',roof:'#2a2f5a',d:'Mansion megah: pilar, menara & bendera.'}
+ {n:'Rumah Biasa-Sedang',w:4,h:2,p:2500000,ex:22,rh:14,wall:'#e2d2b0',roof:'#c0504d',d:'Ada beranda, kotak bunga & cerobong.'},
+ {n:'Rumah Sedang',w:5,h:2,p:4000000,ex:28,rh:20,wall:'#e8dcc4',roof:'#3d6fb5',d:'Atap tinggi, jendela atap & dua cerobong.'},
+ {n:'Rumah Sedang-Besar',w:6,h:3,p:7000000,ex:30,rh:22,wall:'#d8d4cc',roof:'#7a3aa8',d:'Dua lantai dengan balkon & sayap samping.'},
+ {n:'Mansion',w:8,h:3,p:20000000,ex:38,rh:28,wall:'#f0ece0',roof:'#2a2f5a',d:'Mansion megah: pilar, menara & bendera.'}
 ];
 function makeEstate(b){
   const q=EST_T[b.tier],t=b.tier,W=b.w*T,Hw=b.h*T,H=Hw+q.ex,top=q.ex,[c,g]=mk(W,H),rf=b.roof,rd=shade(rf,.72),hw=W>>1;
@@ -2504,9 +2504,9 @@ function drawTpFx(now){
 
 /* ---- PELIHARAAN & TUNGGANGAN ---- */
 const PETS={
-  kucing:{n:'Kucing',ic:'🐱',p:1200,feed:60,d:'+12% EXP semua sumber'},
-  anjing:{n:'Anjing',ic:'🐶',p:1800,feed:90,d:'+12% Maks HP'},
-  kuda:{n:'Kuda (tunggangan)',ic:'🐎',p:5000,feed:200,d:'+30% kecepatan jalan',mount:1}
+  kucing:{n:'Kucing',ic:'🐱',p:12000,feed:600,d:'+12% EXP semua sumber'},
+  anjing:{n:'Anjing',ic:'🐶',p:18000,feed:900,d:'+12% Maks HP'},
+  kuda:{n:'Kuda (tunggangan)',ic:'🐎',p:50000,feed:2000,d:'+30% kecepatan jalan',mount:1}
 };
 const petOn=k=>!!(P&&P.pet&&P.pet.f>0&&(!k||P.pet.k===k));
 let petP={x:0,y:0,k:'pet',hungry:false};
@@ -2865,7 +2865,7 @@ const ANIM={ayam:{n:'Ayam',p:400,cyc:35,prod:'telur',sell:8},sapi:{n:'Sapi',p:15
 const FURN=[{id:'kasur',n:'Kasur',p:12000,w:2},{id:'meja',n:'Meja',p:6000,w:2},{id:'kursi',n:'Kursi',p:3000,w:1},{id:'rak',n:'Rak Buku',p:8000,w:2},{id:'karpet',n:'Karpet',p:4000,w:2,flat:true},{id:'tanaman',n:'Pot Tanaman',p:2500,w:1},{id:'lampu',n:'Lampu',p:3500,w:1}];
 const FD={};FURN.forEach(f=>FD[f.id]=f);
 const HP=[200000,300000,400000,500000];
-const PLOTS=[{k:'farm',x:8,y:-2,w:4,h:3,p:15000},{k:'farm',x:8,y:2,w:4,h:3,p:25000},{k:'ranch',x:-11,y:-2,w:4,h:3,p:20000},{k:'ranch',x:-11,y:2,w:4,h:3,p:30000}];
+const PLOTS=[{k:'farm',x:8,y:-2,w:4,h:3,p:5000},{k:'farm',x:8,y:2,w:4,h:3,p:15000},{k:'ranch',x:-11,y:-2,w:4,h:3,p:20000},{k:'ranch',x:-11,y:2,w:4,h:3,p:30000}];
 function plotAt(x,y){return PLOTS.find(p=>x>=p.x&&x<p.x+p.w&&y>=p.y&&y<p.y+p.h);}
 
 const STATK=['str','spd','def','sta'];
