@@ -1835,6 +1835,51 @@ const SPELL_DESC={
   gelap:'Bola gelap pengejar, menyedot nyawa musuh.'};
 SPELLS.forEach(s=>s.desc=SPELL_DESC[s.id]);
 SPELLS.push({id:'heal',name:'Cahaya Penyembuh',mp:12,cd:6,col:'#7dffb0',icon:'💚',desc:'Sihir penyembuh AREA: memulihkan 30% HP maks semua yang ada dalam radius 56.'});
+const NZ_SP=[7,8,9,10,11],NZ_LV=[1,5,12,25,40];   // skill kegelapan Necromancer (indeks di SPELLS) & level buka
+SPELLS.push(
+ {id:'nz_bola',name:'Bola Kegelapan',mp:8,cd:1.0,col:'#9b59d0',icon:'🌑',desc:'Bola gelap pengejar, menyedot nyawa musuh.'},
+ {id:'nz_cakar',name:'Cakar Bayangan',mp:12,cd:2.0,col:'#7a34c8',icon:'🦇',desc:'Tiga cakar bayangan menyebar dan mengejar musuh.'},
+ {id:'nz_nova',name:'Ledakan Jiwa',mp:16,cd:5,col:'#6a2fa0',icon:'💥',desc:'Ledakan gelap di sekitarmu, melukai dan memperlambat musuh.'},
+ {id:'nz_drain',name:'Sedot Nyawa',mp:14,cd:4,col:'#b0206a',icon:'🩸',desc:'Menyedot nyawa musuh terdekat dan memulihkan HP-mu.'},
+ {id:'nz_teror',name:'Teror Kematian',mp:22,cd:12,col:'#3a1060',icon:'☠️',desc:'Gelombang teror area besar: melukai dan melumpuhkan musuh 1,6 detik.'});
+function nzSpSet(){const l=(typeof effLvl==='function'?effLvl():P.lvl),a=Array(12).fill(false);NZ_SP.forEach((sp,k)=>{if(l>=NZ_LV[k])a[sp]=true;});P.sp=a;}
+function nzRing(x,y,R,col){
+  fx.push({t:0,k:'ring',x,y,r0:4,r1:R,col,life:0.5});fx.push({t:0,k:'ring',x,y,r0:2,r1:R*0.6,col:'#1a0630',life:0.35});
+  for(let k=0;k<18;k++){const b=k/18*6.283;sparkFx(x,y,k%2?'#0a0510':'#9b59d0',0.55,Math.cos(b)*R*1.2,Math.sin(b)*R*1.2,2);}
+}
+function nzDebuff(m,k,v){if(m.pvp||m.dead)return;if(m.net){if(MPsb)mpOut({t:'e',o:m.id,[k]:v});}else m[k]=Math.max(m[k]||0,v);}
+function nzCast(id,a,ca,sa,ox,oy,pw){
+  switch(id){
+    case 'nz_bola':proj.push({t:'gelap',x:ox,y:oy,vx:ca*70,vy:sa*70,life:2.8,dmg:4*pw,r:6,homing:true});break;
+    case 'nz_cakar':for(let k=-1;k<=1;k++){const b=a+k*0.3;proj.push({t:'gelap',x:ox,y:oy,vx:Math.cos(b)*95,vy:Math.sin(b)*95,life:1.5,dmg:2.5*pw,r:5,homing:true});}break;
+    case 'nz_nova':{const cx=P.x,cy=P.y-7,R0=56;nzRing(cx,cy,R0,'#9b59d0');
+      for(const m of mobsPv()){if(m.dead)continue;const mx=m.x-cx,my=mc(m)-cy;
+        if(Math.hypot(mx,my)<R0+MOBS[m.type].rad){hitMob(m,5*pw,'gelap',{by:'spell',kx:mx*4,ky:my*4,kb:0.2});nzDebuff(m,'slow',2.5);}}
+      for(const q of proj)if(q.hostile&&Math.hypot(q.x-cx,q.y-cy)<R0)q.dead=true;
+      break;}
+    case 'nz_drain':{let t=null,bd=120;
+      for(const m of mobs){if(m.dead||m.pvp)continue;const md=MOBS[m.type];if(!md||md.immortal)continue;const d=Math.hypot(m.x-P.x,mc(m)-P.y);if(d<bd){bd=d;t=m;}}
+      if(!t){toast('Tidak ada musuh dalam jangkauan');P.mp+=SPELLS[10].mp;cds[10]=0;break;}
+      const dm=7*pw;
+      for(let k=0;k<=10;k++){const u=k/10;sparkFx(P.x+(t.x-P.x)*u,P.y-8+(mc(t)-P.y+8)*u,k%2?'#b0206a':'#0a0510',0.5,0,0,2);}
+      hitMob(t,dm,'gelap',{by:'spell',kx:(t.x-P.x)*2,ky:(t.y-P.y)*2,kb:0.1});
+      const hl=Math.max(2,Math.round(dm*0.5));P.hp=Math.min(P.maxHp,P.hp+hl);floatText(P.x,P.y-24,'+'+hl+' HP','#ff6aa8');
+      break;}
+    case 'nz_teror':{const cx=P.x,cy=P.y-7,R0=72;nzRing(cx,cy,R0,'#3a1060');
+      for(const m of mobsPv()){if(m.dead)continue;const mx=m.x-cx,my=mc(m)-cy;
+        if(Math.hypot(mx,my)<R0+MOBS[m.type].rad){hitMob(m,2*pw,'gelap',{by:'spell',kx:mx*2,ky:my*2,kb:0.1});nzDebuff(m,'stun',1.6);}}
+      break;}
+  }
+}
+function nzReplay(id,a,ca,sa,ox,oy,px,py){
+  switch(id){
+    case 'nz_bola':proj.push({t:'gelap',vis:true,x:ox,y:oy,vx:ca*90,vy:sa*90,life:2.2,dmg:0,r:6});break;
+    case 'nz_cakar':for(let k=-1;k<=1;k++){const b=a+k*0.3;proj.push({t:'gelap',vis:true,x:ox,y:oy,vx:Math.cos(b)*95,vy:Math.sin(b)*95,life:1.5,dmg:0,r:5});}break;
+    case 'nz_nova':nzRing(px,py-7,56,'#9b59d0');break;
+    case 'nz_teror':nzRing(px,py-7,72,'#3a1060');break;
+    case 'nz_drain':for(let k=0;k<10;k++)sparkFx(px+ca*k*10,py-8+sa*k*10,k%2?'#b0206a':'#0a0510',0.5,0,0,2);break;
+  }
+}
 
 /* =========================================================
    DUNIA 2 — SEMUA MONSTER BERBEDA (bentuk, warna, nama)
@@ -2064,7 +2109,7 @@ const BASE_SLOTS=36;                                   // slot inventori dasar
 const RANSEL_SLOTS=[6,9,12,16,20,25,30,36,42,50];           // tambahan slot per macam ransel
 const GSN={w:'Senjata',h:'Helm',a:'Zirah',b:'Sepatu',r:'Cincin',k:'Ransel'};
 const GSI={w:'⚔️',h:'🪖',a:'🦺',b:'🥾',r:'💍',k:'🎒'};
-const GWT={pedang:{ic:'⚔️',n:'Pedang',roles:['prajurit','warga']},busur:{ic:'🏹',n:'Busur',roles:['pemanah']},tongkat:{ic:'🪄',n:'Tongkat Sihir',roles:['penyihir']},perisai:{ic:'🛡️',n:'Perisai',roles:['tanker']}};
+const GWT={pedang:{ic:'⚔️',n:'Pedang',roles:['prajurit','warga']},busur:{ic:'🏹',n:'Busur',roles:['pemanah']},tongkat:{ic:'🪄',n:'Tongkat Sihir',roles:['penyihir','necromancer']},perisai:{ic:'🛡️',n:'Perisai',roles:['tanker']}};
 /* 10 macam untuk tiap senjata & perlengkapan (indeks 0-9). TIDAK dijual: didapat dari hadiah boss dungeon.
    Tiap macam punya stat dasar + bonus khusus yang berbeda. */
 const GV=[
@@ -2137,7 +2182,7 @@ function migrateGear(bag,gear){
   }
   if(gear&&typeof gear==='object')for(const k in gear){const n=legacyGear(gear[k]);if(n)gear[k]=n;}
 }
-const roleWT=()=>P&&P.role==='pemanah'?'busur':P&&P.role==='penyihir'?'tongkat':P&&P.role==='tanker'?'perisai':'pedang';
+const roleWT=()=>P&&P.role==='pemanah'?'busur':P&&isMg()?'tongkat':P&&P.role==='tanker'?'perisai':'pedang';
 const gearId=(s,t)=>s==='w'?'w_'+roleWT()+'_g'+(t+1):s+'_g'+(t+1);
 function fixGear(){
   if(!P||!P.bag)return;
@@ -2816,7 +2861,7 @@ const SKILLS={
     {id:'aura',name:'Aura Pelindung',icon:'✨',mp:5,cd:18,col:'#fff3a0',desc:'10 dtk: damage diterima -25% dan HP pulih 1,5%/dtk.'},
     {id:'kulit',name:'Kulit Batu',icon:'🪨',mp:5,cd:22,col:'#c9b28a',desc:'6 dtk: menyerap damage hingga 30% HP maks & kebal terhempas.'}]
 };
-const POOL=()=>P.role==='penyihir'?SPELLS:(SKILLS[P.role]||[]);
+const POOL=()=>isMg()?SPELLS:(SKILLS[P.role]||[]);
 const QUESTS=[
   {id:'kristal1',npc:'Tetua Desa',title:'Kristal Desa',st:'crystal',need:5,req:[],
     offer:['Selamat datang, petualang!','Dunia ini luas dan tak bertepi. Kristal biru tersebar di mana-mana.','Tolong kumpulkan 5 kristal untukku. Cari di sekitar desa!'],
@@ -2905,11 +2950,14 @@ const ROLES={
   penyihir:{id:'penyihir',n:'Penyihir',ic:'🔮',col:'#b48cff',hp0:14,hpl:2.5,def:0.8,mp0:40,mpl:6,mpr:1.7,sword:0,bow:0,spell:0.5,maxLvl:1200,farm:false,xpMul:1,
     ket:3,atk:5,hint:'🔮 Penyihir: klik kiri/kanan atau F untuk sihir. 1-3 pilih sihir, K = pasang 3 dari 7 sihir.',
     desc:'Hanya memakai sihir. Ketahanan sedang, sihir sangat kuat. 7 sihir (termasuk sihir penyembuh area) terbuka seiring level; pasang 3 sekaligus.'},
+  necromancer:{id:'necromancer',n:'Necromancer',ic:'💀',col:'#a855f7',hp0:14,hpl:2.5,def:0.8,mp0:30,mpl:4,mpr:1.4,sword:0,bow:0,spell:0.3,maxLvl:1200,farm:false,xpMul:1,
+    ket:3,atk:3,hint:'💀 Necromancer: sihir seperti penyihir. Dekati mayat monster (berbaring 30 detik): E = ambil loot, R = bangkitkan jadi pasukan (butuh MP).',
+    desc:'Kekuatan sedang, ketahanan sedang. Bisa membangkitkan monster yang terbunuh (stat sama persis, berwarna ungu-hitam dengan partikel gelap) untuk ikut bertarung. Slot: Lv1=3, Lv2=5, Lv3=6, lalu +1 tiap level. Tiap bangkit memakai MP. Monster tetap di slot sampai mati. Pilih: ambil loot atau bangkitkan.'},
   tanker:{id:'tanker',n:'Tanker',ic:'🛡️',col:'#6ab8ff',hp0:28,hpl:5,def:0.5,mp0:10,mpl:1,mpr:1,sword:0.3,bow:0,spell:0,maxLvl:1200,farm:false,xpMul:1,shield:true,
     ket:5,atk:3,hint:'🛡️ Tanker: TAHAN klik kanan / F = perisai. Tombol 1-3 = skill, K = pilih 3 dari 5 skill.',
     desc:'Pengguna perisai. Ketahanan sangat kuat, serangan sedang. Tahan klik kanan/F untuk bertahan. Punya 5 skill, pasang 3 sekaligus.'}
 };
-const ROLE_IDS=['warga','prajurit','pemanah','penyihir','tanker'];
+const ROLE_IDS=['warga','prajurit','pemanah','penyihir','necromancer','tanker'];
 const SPELL_LV=[1,5,12,25,40,60,3];   // sihir ke-7 (Cahaya Penyembuh) terbuka di Lv 3
 const FISH=[{k:'Ikan Kecil',sell:6,xp:4,w:50},{k:'Ikan Mas',sell:14,xp:8,w:30},{k:'Ikan Besar',sell:30,xp:15,w:15},{k:'Ikan Koi',sell:55,xp:25,w:8},{k:'Ikan Emas',sell:90,xp:40,w:5}];
 const RL=()=>ROLES[(typeof P!=='undefined'&&P&&P.role)||'warga'];
@@ -2932,7 +2980,7 @@ const myG=()=>AR?-2:DG?1000+DG.i*100+DG.f:IN!==null?-1:0;
 const sameZone=(g,w)=>(g|0)===myG()&&((w|0)||1)===WORLD;   // zona sama = ruang sama DAN dunia sama
 let MPzone,MPmid=0,MPid='',MPcl=false,MPauth=true,MPwasCl=false,MPsrc=null,MPsnapT=0;
 const mpNewId=()=>(MPid||'x')+':'+(++MPmid);
-const cds=[0,0,0,0,0,0,0];
+const cds=[0,0,0,0,0,0,0,0,0,0,0,0];
 const timers=[];
 const loaded=new Set();
 let dlg=null,dying=false,deathT=0,customImg=null,msgT=0;
@@ -2962,7 +3010,7 @@ function recalc(){
   if(petOn('anjing'))P.maxHp=Math.round(P.maxHp*1.12);
   P.maxMp=Math.round(R.mp0+R.mpl*(effLvl()-1))+(P.bmp||0)+G.mp;
   if(R.id!=='pemanah'){P.hasBow=false;P.weapon='sword';}else P.hasBow=true;
-  if(R.id==='penyihir'){SPELL_LV.forEach((l,i)=>{if(effLvl()>=l)P.sp[i]=true;});if(!P.sp[P.sel])P.sel=0;}
+  if(isMgR(R.id)){if(R.id==='necromancer'){nzSpSet();if(!NZ_SP.includes(P.sel))P.sel=NZ_SP[0];}else{SPELL_LV.forEach((l,i)=>{if(effLvl()>=l)P.sp[i]=true;});if(!P.sp[P.sel])P.sel=0;}}
   P.maxSt=50+stv('sta')*3+G.stam;if(!isFinite(P.stam))P.stam=P.maxSt;
   P.hp=Math.min(P.hp,P.maxHp);P.mp=Math.min(P.mp,P.maxMp);P.stam=Math.min(P.stam,P.maxSt);
   fixEq(false);
@@ -2983,7 +3031,7 @@ function loadGame(){
     if(s&&s.p){
       SAVE_FIELDS.forEach(k=>{if(s.p[k]!==undefined)P[k]=s.p[k];});
       P.st=Object.assign(freshStats(),P.st||{});
-      if(!Array.isArray(P.sp))P.sp=[];while(P.sp.length<7)P.sp.push(false);P.sp.length=7;
+      if(!Array.isArray(P.sp))P.sp=[];while(P.sp.length<12)P.sp.push(false);P.sp.length=12;
       if(!Array.isArray(P.qdone))P.qdone=[];
       if(!P.qact||typeof P.qact!=='object')P.qact={};
       if(P.weapon==='bow'&&!P.hasBow)P.weapon='sword';
@@ -3063,7 +3111,7 @@ function worldRestore(o){
   WFIELDS.forEach(k=>{if(o[k]!==undefined)P[k]=cloneJ(o[k]);});
   collected=new Set(o.col||[]);picked=new Set(o.flw||[]);
   P.st=Object.assign(freshStats(),P.st||{});
-  if(!Array.isArray(P.sp))P.sp=[];while(P.sp.length<7)P.sp.push(false);P.sp.length=7;
+  if(!Array.isArray(P.sp))P.sp=[];while(P.sp.length<12)P.sp.push(false);P.sp.length=12;
   if(!isFinite(P.x)||!isFinite(P.y)){P.x=8;P.y=44;}
   P.buf={};P.absorb=0;
   recalc();
@@ -3169,7 +3217,7 @@ function giveReward(q){
   const r=q.rew;
   delete P.qact[q.id];P.qdone.push(q.id);
   if(r.c)P.coins+=r.c;
-  const isMage=P.role==='penyihir';
+  const isMage=isMg();
   if(r.spell!==undefined&&isMage){P.sp[r.spell]=true;P.sel=r.spell;}
   if(r.hp)P.bhp+=r.hp;
   if(r.mp)P.bmp+=r.mp;
@@ -3635,7 +3683,7 @@ function buildHotbar(){
   w.addEventListener('pointerdown',e=>{e.preventDefault();swapWeapon();});
   hb.appendChild(w);hbSlots.w=w;
   const sep=document.createElement('div');sep.className='sep';hb.appendChild(sep);
-  const isMage=P.role==='penyihir',hasSk=isMage||!!SKILLS[P.role];
+  const isMage=isMg(),hasSk=isMage||!!SKILLS[P.role];
   sep.style.display='none';
   if(isMage)w.style.display='none';
   if(P.role==='warga'){w.style.display='none';}
@@ -3656,7 +3704,7 @@ function buildHotbar(){
 function updateHotbar(){
   hbSlots.w.firstChild.textContent=RL().shield?'🛡️':P.weapon==='bow'?'🏹':'⚔️';
   hbSlots.w.classList.toggle('sel',!!P.shield);
-  const pool=POOL(),mage=P.role==='penyihir',eq=P.eq||[-1,-1,-1];
+  const pool=POOL(),mage=isMg(),eq=P.eq||[-1,-1,-1];
   for(let n=0;n<3;n++){
     const el=hbSlots[n];if(!el)continue;
     const idx=eq[n],s=pool[idx];
@@ -3679,7 +3727,7 @@ function updateHUD(){
   $('mptxt').textContent=Math.floor(P.mp)+'/'+P.maxMp;
   $('stbar').style.width=clamp(P.stam/P.maxSt,0,1)*100+'%';$('stbar').style.background=P.exh?'#e0443e':'#4cc46a';$('sttxt').textContent=Math.floor(P.stam)+'/'+P.maxSt+(P.exh?' LELAH':'');
   $('ptsrow').textContent=P.pts>0?'📊 Poin stat: '+P.pts+' (tekan C)':'';
-  $('xpbar').style.width=(P.lvl>=RL().maxLvl?100:clamp(P.xp/xpNeed(P.lvl),0,1)*100)+'%';$('xptxt').textContent=P.lvl>=RL().maxLvl?'MAKS':Math.floor(P.xp)+'/'+xpNeed(P.lvl);$('pname').textContent='👤 '+(P.name||'')+(WORLD===2?' · 🔥 Dunia 2':'');$('rolet').textContent=RL().ic+' '+RL().n+buffTxt()+gqHud();
+  $('xpbar').style.width=(P.lvl>=RL().maxLvl?100:clamp(P.xp/xpNeed(P.lvl),0,1)*100)+'%';$('xptxt').textContent=P.lvl>=RL().maxLvl?'MAKS':Math.floor(P.xp)+'/'+xpNeed(P.lvl);$('pname').textContent='👤 '+(P.name||'')+(WORLD===2?' · 🔥 Dunia 2':'');$('rolet').textContent=RL().ic+' '+RL().n+buffTxt()+gqHud()+nzHud();
   $('fdbar').style.width=clamp(P.food,0,100)+'%';$('fdbar').style.background=P.food<20?'#e0443e':'#e0a030';
   $('fdtxt').textContent=Math.ceil(P.food)+'/100'+(P.food<=0?' LAPAR!':P.food<20?' lapar':P.food>=60?' kenyang':'');
   $('coins').textContent=P.coins;$('crys').textContent=P.st.crystal;$('kills').textContent=P.st.kill;
@@ -3724,7 +3772,8 @@ function gainXp(n,farm){
     P.xp-=xpNeed(P.lvl);P.lvl++;P.pts=(P.pts||0)+1;recalc();P.hp=P.maxHp;P.mp=P.maxMp;P.stam=P.maxSt;P.exh=false;
     toast('LEVEL UP! Lv '+P.lvl+(P.lvl>=R.maxLvl?' (MAKSIMAL)':'')+' · +1 poin stat (tekan C)');
     fx.push({k:'text',x:P.x,y:P.y-26,txt:'LEVEL UP!',col:'#ffe066',t:0,life:1.4});levelFx();
-    if(R.id==='penyihir'){const i=SPELL_LV.indexOf(P.lvl);if(i>=0){fixEq(true);toast('Sihir '+SPELLS[i].name+' terbuka! '+(P.eq.includes(i)?'(terpasang di tombol '+(P.eq.indexOf(i)+1)+')':'(tekan K untuk memasang)'));}}
+    if(R.id==='necromancer'){const k=NZ_LV.indexOf(P.lvl);if(k>0){nzSpSet();fixEq(true);toast('Skill '+SPELLS[NZ_SP[k]].name+' terbuka! '+(P.eq.includes(NZ_SP[k])?'(terpasang)':'(tekan K untuk memasang)'));}}
+    if(isMgR(R.id)&&R.id!=='necromancer'){const i=SPELL_LV.indexOf(P.lvl);if(i>=0){fixEq(true);toast('Sihir '+SPELLS[i].name+' terbuka! '+(P.eq.includes(i)?'(terpasang di tombol '+(P.eq.indexOf(i)+1)+')':'(tekan K untuk memasang)'));}}
   }
   if(P.lvl>=R.maxLvl){P.xp=0;checkWorldUnlock();}
 }
@@ -3780,7 +3829,7 @@ function arStart(a,n,di){
   const lv=Math.floor((effLvl()-1)/4);
   const R_=RL(),pw_=(1+(effLvl()-1)*0.05)*R_.spell*strMul();
   const dS=Math.max(2,Math.round((2+lv)*R_.sword*strMul())),dB=Math.max(2,Math.round((3+lv)*R_.bow*strMul())),dM=Math.max(2,Math.round(3*pw_));
-  const mode=P.role==='penyihir'?'magic':(P.role==='pemanah'||bowM)?'bow':'melee';   // serangan utama sesuai peran
+  const mode=isMg()?'magic':(P.role==='pemanah'||bowM)?'bow':'melee';   // serangan utama sesuai peran
   const ref=mode==='magic'?dM:mode==='bow'?dB:dS,kinds=AR_KINDS.filter(k=>SPR[k]);
   const fs=[],used=new Set();
   const nm=()=>{let s;do{s=AR_NAMES[Math.floor(Math.random()*AR_NAMES.length)];}while(used.has(s)&&used.size<AR_NAMES.length);used.add(s);return s;};
@@ -4596,7 +4645,7 @@ function swapWeapon(){
 }
 function attack(){
   if(P.atk>0||dying||dlg||menu||IN!==null||AR)return;
-  if(P.role==='penyihir'){cast();return;}
+  if(isMg()){cast();return;}
   if(P.shield)return;
   const stc=(P.weapon==='bow'&&P.hasBow)?5:6;
   if(P.exh||P.stam<stc){if(msgT<=0){toast('Stamina habis! ⚡');msgT=0.8;}return;}
@@ -4623,20 +4672,21 @@ function attack(){
 
 /* ---- sihir ---- */
 function selectSpell(i){
-  if(P.role!=='penyihir')return;
+  if(!isMg())return;
   if(!P.sp[i]){toast('Sihir '+SPELLS[i].name+' belum terbuka');return;}
   if(!(P.eq||[]).includes(i)){toast('Sihir belum terpasang. Tekan K.');return;}
   P.sel=i;
 }
 function cycleSpell(dir){
-  if(P.role!=='penyihir')return;
+  if(!isMg())return;
   const eq=(P.eq||[]).filter(v=>v>=0);if(!eq.length)return;
   const k=eq.indexOf(P.sel);
   P.sel=eq[(((k<0?0:k)+dir)%eq.length+eq.length)%eq.length];
 }
 /* ---- sistem skill: 3 slot aktif dari kumpulan skill ---- */
 function fixEq(fill){
-  const pool=POOL(),n=pool.length,mage=P.role==='penyihir';
+  if(P.role==='necromancer')nzSpSet();
+  const pool=POOL(),n=pool.length,mage=isMg();
   if(!Array.isArray(P.eq)){P.eq=[-1,-1,-1];fill=true;}
   let e=P.eq.slice(0,3);while(e.length<3)e.push(-1);
   e=e.map(v=>(Number.isInteger(v)&&v>=0&&v<n)?v:-1);
@@ -4652,7 +4702,7 @@ function fixEq(fill){
 function slotPress(n){
   if(dlg||dying||menu)return;
   const idx=(P.eq||[])[n];
-  if(P.role==='penyihir'){
+  if(isMg()){
     if(idx>=0)P.sel=idx;else toast('Slot kosong. Tekan K untuk memasang sihir.');
     return;
   }
@@ -4828,13 +4878,14 @@ function skillMenu(){
   if(menu){closeMenu();return;}
   const pool=POOL();
   if(!pool.length){toast('Perananmu tidak memakai skill');return;}
-  const mage=P.role==='penyihir';
+  const mage=isMg();
   openMenu('Skill Aktif (K) — pasang maks. 3',()=>{
     const used=(P.eq||[]).filter(v=>v>=0).length;
     const r=[{t:'Terpasang: <b>'+used+'/3</b><br><small style="color:#9ad">'+(mage?'Tombol 1-3 / roda mouse memilih sihir, klik kanan/F melepas sihir.':'Tombol 1-3 langsung memakai skill. Hanya skill terpasang yang bisa dipakai.')+'</small>',b:'—',off:true,f:()=>{}}];
     pool.forEach((s,i)=>{
+      if((P.role==='necromancer')!==NZ_SP.includes(i)&&mage)return;
       const on=(P.eq||[]).includes(i),locked=mage&&!P.sp[i];
-      r.push({t:s.icon+' <b>'+s.name+'</b> '+(on?'<span style="color:#7dffb0">[tombol '+(P.eq.indexOf(i)+1)+']</span>':'')+' <small style="color:#9ad">MP '+s.mp+' · CD '+s.cd+'d'+(locked?' · 🔒 Lv '+SPELL_LV[i]:'')+'</small><br><small style="color:#9ad">'+s.desc+'</small>',
+      r.push({t:s.icon+' <b>'+s.name+'</b> '+(on?'<span style="color:#7dffb0">[tombol '+(P.eq.indexOf(i)+1)+']</span>':'')+' <small style="color:#9ad">MP '+s.mp+' · CD '+s.cd+'d'+(locked?' · 🔒 Lv '+(P.role==='necromancer'?NZ_LV[NZ_SP.indexOf(i)]:SPELL_LV[i]):'')+'</small><br><small style="color:#9ad">'+s.desc+'</small>',
         b:locked?'Terkunci':on?'Lepas':'Pasang',off:locked,
         f:()=>{
           if(on){P.eq[P.eq.indexOf(i)]=-1;}
@@ -4853,8 +4904,8 @@ function skillMenu(){
 /* ---- sihir ---- */
 function cast(){
   if(dying||dlg||menu)return;
-  if(P.role!=='penyihir')return;        // tanker memakai perisai (ditahan), peran lain tidak bersihir
-  if(IN!==null||AR)return;const i=P.sel,s=SPELLS[i];
+  if(!isMg())return;        // tanker memakai perisai (ditahan), peran lain tidak bersihir
+  if(IN!==null||AR)return;if(P.role==='necromancer'&&!NZ_SP.includes(P.sel)){nzSpSet();fixEq(true);}const i=P.sel,s=SPELLS[i];
   if(!s||!(P.eq||[]).includes(i)){if(msgT<=0){toast('Pasang sihir dulu: tekan K');msgT=0.8;}return;}
   if(!P.sp[i]){if(msgT<=0){toast('Sihir '+s.name+' belum terbuka');msgT=0.8;}return;}
   if(cds[i]>0)return;
@@ -4899,6 +4950,7 @@ function cast(){
     case 'gelap':
       proj.push({t:'gelap',x:ox,y:oy,vx:ca*70,vy:sa*70,life:2.8,dmg:4*pw,r:6,homing:true});
       break;
+    case 'nz_bola':case 'nz_cakar':case 'nz_nova':case 'nz_drain':case 'nz_teror':nzCast(s.id,a,ca,sa,ox,oy,pw);break;
     case 'heal':{
       const cx=P.x,cy=P.y-7,R0=56,n=Math.max(3,Math.round(P.maxHp*0.3));
       fx.push({t:0,k:'ring',x:cx,y:cy,r0:4,r1:R0,col:'#7dffb0',life:0.55});
@@ -4941,7 +4993,7 @@ function killMob(m,by){
   sfx(m.boss?'bossKill':'kill');
   if(MPsb&&!m.net&&IN===null){
     mpOut({t:'k',o:m.id,by:m.lastSrc||MPid,x:Math.round(m.x),y:Math.round(m.y)});
-    if(m.lastSrc){burst(m.x,mc(m),'#ffffff');if(m.boss&&DG)dgBossShared();if(Math.hypot(P.x-m.x,P.y-m.y)<260&&!dying){gainXp(m.xp);floatText(m.x,mc(m)-16,'+'+m.xp+' XP','#8fe3ff');}return;}
+    if(m.lastSrc){nzCorpseAdd(m,false);burst(m.x,mc(m),'#ffffff');if(m.boss&&DG)dgBossShared();if(Math.hypot(P.x-m.x,P.y-m.y)<260&&!dying){gainXp(m.xp);floatText(m.x,mc(m)-16,'+'+m.xp+' XP','#8fe3ff');}return;}
   }
   P.st.kill++;P.st[m.type]=(P.st[m.type]||0)+1;gqKill(m);if(m.boss&&DG){if(DG.f<DG.d.floors)dgMiniDead(m);else dgBossDead(m);}
   if(by==='arrow')P.st.arrow++;
@@ -4950,15 +5002,27 @@ function killMob(m,by){
   const d=MOBS[m.type];
   burst(m.x,mc(m),m.type==='slime'?(WORLD===2?SL2:SL)[m.tier][0]:d.col);deathFx(m,m.type==='slime'?(WORLD===2?SL2:SL)[m.tier][0]:d.col);
   floatText(m.x,mc(m)-16,'+'+m.xp+' XP','#8fe3ff');
+  if(m.boss||m.minion)mobRewards(m);else nzCorpseAdd(m,true);
+  if(m.boss&&!DG)bossReward(m);
+}
+
+/* ================= NECROMANCER & MAYAT ================= */
+function isMg(){return !!P&&(P.role==='penyihir'||P.role==='necromancer');}
+function isMgR(id){return id==='penyihir'||id==='necromancer';}
+const NZ={allies:[],corpses:[],remote:new Map(),bc:0,sent:false,near:null,nk:'',CAP:40,LIFE:30};   // CAP = batas slot (performa & sinkron)
+const NZF=(typeof CanvasRenderingContext2D!=='undefined')&&('filter' in CanvasRenderingContext2D.prototype);
+const nzZone=()=>(DG?'d'+DG.f:IN!==null?'i':'w')+WORLD;
+const nzSlots=l=>Math.min(NZ.CAP,l<=1?3:l===2?5:l===3?6:6+(l-3));
+const nzCost=c=>Math.min(60,Math.round(10+(c.lvl||1)*0.5+(c.tier||0)*2));
+const nzHud=()=>P&&P.role==='necromancer'?' 💀'+NZ.allies.length+'/'+nzSlots(P.lvl):'';
+function mobRewards(m){
   const lvm=1+((m.lvl||1)-1)*0.08;
-  const cv_=Math.max(1,Math.round(lvm*({slime:1+m.tier,bat:1,goblin:3,skeleton:4,golem:12,ghost:3,rusa:2,kelinci:1,ayam_liar:1,kerbau:4,beruang:5,serigala:3,harimau:6,buaya:4}[m.type]||1)));
+  const cv_=Math.max(1,Math.round(lvm*({slime:1+(m.tier||0),bat:1,goblin:3,skeleton:4,golem:12,ghost:3,rusa:2,kelinci:1,ayam_liar:1,kerbau:4,beruang:5,serigala:3,harimau:6,buaya:4}[m.type]||1)));
   const drop=(type,val,life)=>pickups.push({kind:'pickup',type,x:m.x+(Math.random()*10-5),y:m.y,val,ck:null,t:0,life:life||25});
   if(Math.random()<0.65)drop('coin',cv_);
   if(Math.random()<0.2)drop('heart');
   if(Math.random()<0.25)drop('mana');
   if(m.type==='golem')drop('crystal',1,60);
-  if(m.boss&&!DG)bossReward(m);
-  // loot buruan langsung ke inventori
   const drops=MOB_DROPS[m.type];
   if(drops){
     const got=[];let full=false;
@@ -4971,6 +5035,150 @@ function killMob(m,by){
     if(got.length||full)toast((got.length?'Loot: '+got.join(', '):'')+(full?(got.length?' · ':'')+'🎒 Inventori penuh, sebagian jatuh ke tanah':''));
   }
 }
+function nzCorpseAdd(m,mine){
+  if(!m||m.boss||m.minion||m.pvp||m.zmb)return;
+  if(NZ.corpses.some(c=>c.id===m.id))return;
+  NZ.corpses.push({kind:'mob',cps:true,id:m.id,type:m.type,tier:m.tier||0,lvl:m.lvl||1,x:m.x,y:m.y,hp:m.maxHp,maxHp:m.maxHp,dmg:m.dmg,xp:0,spd:m.spd||1,dir:m.dir||0,
+    anim:0,walkT:0,t:Math.random()*5,flash:0,hit:0,hop:0,lunge:0,aim:0,wind:0,fade:1,boss:false,dead:false,life:NZ.LIFE,mine:!!mine,zk:nzZone()});
+  if(NZ.corpses.length>60)NZ.corpses.shift();
+}
+function nzRemove(c){NZ.corpses=NZ.corpses.filter(x=>x!==c);NZ.nk='';if(MPsb)mpOut({t:'nc',o:c.id});}
+function nzClaimLoot(){
+  const c=NZ.near;if(!c||!c.mine||dying||IN!==null||c.zk!==nzZone())return false;
+  nzRemove(c);mobRewards(c);floatText(c.x,c.y-16,'Loot diambil','#ffe066');return true;
+}
+function nzRevive(){
+  const c=NZ.near;if(!c||P.role!=='necromancer'||dying||IN!==null||c.zk!==nzZone())return false;
+  const cap=nzSlots(P.lvl);
+  if(NZ.allies.length>=cap){toast('💀 Slot pasukan penuh ('+NZ.allies.length+'/'+cap+')');return true;}
+  const cost=nzCost(c);
+  if(P.mp<cost){toast('💧 MP kurang ('+Math.floor(P.mp)+'/'+cost+')');return true;}
+  P.mp-=cost;nzRemove(c);
+  const a=makeMob(c.type,c.x,c.y,c.tier,null,0,0,c.lvl,true);
+  a.hp=a.maxHp=c.maxHp;a.dmg=c.dmg;a.spd=c.spd;a.xp=0;a.zmb=true;a.cd=0.5;a.hcd=1;a.dir=c.dir;
+  NZ.allies.push(a);burst(c.x,c.y-6,'#8a3cff');floatText(c.x,c.y-20,'💀 Bangkit! -'+cost+' MP','#c07bff');
+  return true;
+}
+function nzTick(dt){
+  for(const c of NZ.corpses){c.life-=dt;c.t+=dt;}
+  NZ.corpses=NZ.corpses.filter(c=>c.life>0);
+  const now=performance.now();
+  NZ.remote.forEach((o,k)=>{
+    if(now-o.seen>1800||!MPpeers.has(k)){NZ.remote.delete(k);return;}
+    for(const a of o.list){const dx=a.tx-a.x,dy=a.ty-a.y;if(dx*dx+dy*dy>2500){a.x=a.tx;a.y=a.ty;}else{const q=Math.min(1,dt*10);a.x+=dx*q;a.y+=dy*q;}
+      a.t+=dt;if(a.walkT>0){a.walkT-=dt;a.anim+=dt*8;}a.hop=(a.type==='slime'&&a.walkT>0)?0.02+0.3*Math.abs(Math.sin(a.t*6)):0;}
+  });
+  if(P.role!=='necromancer'){NZ.allies.length=0;}
+  else{
+    for(const a of NZ.allies){
+      a.t+=dt;if(a.walkT>0)a.walkT-=dt;if(a.cd>0)a.cd-=dt;if(a.hcd>0)a.hcd-=dt;if(a.flash>0)a.flash-=dt;if(a.lunge>0)a.lunge-=dt;
+      const od=Math.hypot(P.x-a.x,P.y-a.y);
+      if(od>240){a.x=P.x+(Math.random()-0.5)*20;a.y=P.y+8+Math.random()*10;continue;}
+      let tg=null,bd=120;
+      for(const m of mobs){if(m.dead||m.pvp)continue;const md=MOBS[m.type];if(!md||md.immortal)continue;
+        if(Math.hypot(m.x-P.x,m.y-P.y)>170)continue;const dd=Math.hypot(m.x-a.x,m.y-a.y);if(dd<bd){bd=dd;tg=m;}}
+      let mx=0,my=0,sp=(a.spd||1)*34;
+      if(tg){
+        const dx=tg.x-a.x,dy=tg.y-a.y,d=Math.hypot(dx,dy)||1,reach=12+((MOBS[tg.type]||{}).rad||6);
+        if(d>reach-2){mx=dx/d;my=dy/d;}
+        a.dir=dirFromVec(dx,dy);
+        if(d<=reach+4&&a.cd<=0){a.cd=0.9;a.lunge=0.15;
+          hitMob(tg,Math.max(2,a.dmg+Math.floor(a.lvl/3)),null,{by:'ally',kx:dx/d*40,ky:dy/d*40,kb:0.1});}
+      }else if(od>36){const dx=P.x-a.x,dy=P.y-a.y;mx=dx/od;my=dy/od;if(od>90)sp*=1.8;a.dir=dirFromVec(dx,dy);}
+      if(mx||my){
+        if((MOBS[a.type]||{}).fly)moveFly(a,mx*sp*dt,my*sp*dt);else moveEnt(a,mx*sp*dt,my*sp*dt,true);
+        a.walkT=0.15;a.anim+=dt*8;
+      }
+      a.hop=(a.type==='slime'&&(mx||my))?0.02+0.3*Math.abs(Math.sin(a.t*6)):0;
+      if(a.hcd<=0){
+        for(const m of mobs){if(m.dead||!(m.dmg>0))continue;
+          if(Math.hypot(m.x-a.x,m.y-a.y)<14+((MOBS[m.type]||{}).rad||6)){
+            const n=Math.max(1,Math.round(m.dmg*0.6));a.hp-=n;a.hcd=1.1;a.flash=0.2;floatText(a.x,a.y-18,'-'+n,'#c07bff');break;}}
+      }
+    }
+    for(const a of NZ.allies)if(a.hp<=0){burst(a.x,a.y-6,'#2a0a40');floatText(a.x,a.y-18,'💀','#c07bff');}
+    NZ.allies=NZ.allies.filter(a=>a.hp>0);
+  }
+  NZ.bc-=dt;
+  if(MPsb&&IN===null&&NZ.bc<=0){
+    NZ.bc=0.22;
+    if(NZ.allies.length||NZ.sent){
+      NZ.sent=NZ.allies.length>0;const q=v=>Math.round(v*10)/10;
+      mpOut({t:'nz',a:NZ.allies.slice(0,NZ.CAP).map(a=>[a.type,a.tier,a.lvl,q(a.x),q(a.y),Math.round(a.hp),a.maxHp,a.dir&3,a.walkT>0?1:0,a.id])});
+    }
+  }
+  let near=null,bd=26;
+  if(!dying&&IN===null){const zk=nzZone();for(const c of NZ.corpses){if(c.zk!==zk)continue;const d=Math.hypot(P.x-c.x,P.y-c.y);if(d<bd){bd=d;near=c;}}}
+  NZ.near=near;
+  const nec=P.role==='necromancer',key=near?near.id+':'+(near.mine?1:0)+(nec?1:0):'';
+  if(key!==NZ.nk){
+    NZ.nk=key;const el=document.getElementById('nzmenu');
+    if(el){el.style.display=near&&(near.mine||nec)?'flex':'none';
+      document.getElementById('nzLoot').style.display=near&&near.mine?'':'none';
+      const r=document.getElementById('nzRev');r.style.display=nec?'':'none';if(near)r.textContent='💀 Bangkitkan [R] · '+nzCost(near)+' MP';}
+  }
+}
+function nzIn(m,f){
+  if(!f||f===MPid)return;
+  const arr=Array.isArray(m.a)?m.a.slice(0,NZ.CAP):[];
+  let o=NZ.remote.get(f);if(!o){o={list:[],seen:0};NZ.remote.set(f,o);}
+  o.seen=performance.now();
+  const old=new Map(o.list.map(a=>[a.id,a]));
+  o.list=arr.map(r=>{
+    if(!Array.isArray(r)||!MOBS[r[0]])return null;
+    const id=String(r[9]).slice(0,40);let a=old.get(id);
+    if(!a)a={kind:'mob',zmb:true,remote:true,id,type:r[0],tier:r[1]|0,lvl:Math.max(1,r[2]|0),x:+r[3]||0,y:+r[4]||0,anim:0,walkT:0,t:Math.random()*5,flash:0,hit:0,hop:0,lunge:0,aim:0,wind:0,fade:1,boss:false,dmg:0,dead:false};
+    a.tx=+r[3]||0;a.ty=+r[4]||0;a.hp=+r[5];a.maxHp=+r[6]||a.hp;a.dir=(r[7]|0)&3;if(r[8])a.walkT=0.2;
+    return a;}).filter(Boolean);
+}
+function nzList(add){
+  const zk=nzZone();
+  for(const c of NZ.corpses)if(c.zk===zk)add(c);
+  for(const a of NZ.allies)add(a);
+  NZ.remote.forEach(o=>{for(const a of o.list)add(a);});
+}
+function nzDraw(e,now){
+  e._in=true;const sx=Math.round(e.x-camX),sy=Math.round(e.y-camY),T_=performance.now()/1000;
+  ctx.save();
+  if(e.cps){
+    ctx.translate(sx,sy-2);ctx.rotate(1.5708);ctx.translate(-sx,-(sy-2));ctx.globalAlpha=0.85;
+    if(NZF)ctx.filter='grayscale(.6) brightness(.8)';
+  }else{
+    ctx.fillStyle='rgba(90,30,140,.30)';ctx.beginPath();ctx.ellipse(sx,sy-8,9,12,0,0,6.283);ctx.fill();
+    if(NZF)ctx.filter='brightness(.62) sepia(1) hue-rotate(235deg) saturate(2.4)';
+  }
+  try{drawEntity(e,now);}finally{ctx.restore();e._in=false;}
+  if(e.cps){
+    const f=Math.max(0,e.life/NZ.LIFE);
+    ctx.fillStyle='rgba(0,0,0,.65)';ctx.fillRect(sx-9,sy-17,18,4);
+    ctx.fillStyle=e.mine?'#ffd23f':'#9aa';ctx.fillRect(sx-8,sy-16,Math.round(16*f),2);
+    if(e===NZ.near){ctx.strokeStyle='#c07bff';ctx.strokeRect(sx-10,sy-18,20,6);}
+  }else{
+    for(let i=0;i<6;i++){
+      const u=(T_*0.9+i*0.17)%1,px=sx+Math.sin(i*2.3+T_*1.7)*8,py=sy-3-u*24;
+      ctx.globalAlpha=1-u;ctx.fillStyle=i%2?'#0a0510':'#7a34c8';ctx.fillRect(Math.round(px),Math.round(py),2,2);
+    }
+    ctx.globalAlpha=1;
+  }
+}
+addEventListener('keydown',e=>{
+  if(!NZ.near||dlg||e.repeat)return;
+  const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'))return;
+  const k=(e.key||'').toLowerCase();let ok=false;
+  if(k==='e')ok=nzClaimLoot();else if(k==='r')ok=nzRevive();
+  if(ok){e.preventDefault();e.stopImmediatePropagation();}
+},true);
+(function(){
+  const el=document.createElement('div');el.id='nzmenu';
+  el.style.cssText='display:none;position:fixed;left:50%;bottom:34%;transform:translateX(-50%);z-index:40;gap:8px;flex-wrap:wrap;justify-content:center';
+  const mk=(id,txt,fn,col)=>{const b=document.createElement('button');b.id=id;b.type='button';b.textContent=txt;
+    b.style.cssText='font:bold 13px system-ui,sans-serif;padding:9px 13px;border-radius:8px;border:2px solid '+col+';background:rgba(15,10,30,.88);color:#fff;touch-action:manipulation';
+    const h=ev=>{ev.preventDefault();ev.stopPropagation();fn();};b.addEventListener('click',h);b.addEventListener('touchstart',ev=>ev.stopPropagation(),{passive:true});el.appendChild(b);};
+  mk('nzLoot','🎒 Ambil Loot [E]',nzClaimLoot,'#ffd23f');
+  mk('nzRev','💀 Bangkitkan [R]',nzRevive,'#a855f7');
+  document.body.appendChild(el);
+})();
+/* ================= /NECROMANCER ================= */
 function hurt(n,fromX,fromY){
   n=Math.max(1,Math.round(n*RL().def*defMul()));
   if(P.shield){n=Math.max(1,Math.round(n*Math.max(0.05,0.15-gearStat().blk/100)));floatText(P.x,P.y-32,'Tangkis!','#6ab8ff');sfx('block');crossFx(P.x,P.y-9,'#6ab8ff',9,0.2);}
@@ -5395,7 +5603,7 @@ function update(dt){
   if(P.inv>0)P.inv-=dt;
   if(P.atk>0)P.atk-=dt;
   if(P.aimT>0)P.aimT-=dt;
-  for(let i=0;i<7;i++)if(cds[i]>0)cds[i]-=dt;
+  for(let i=0;i<12;i++)if(cds[i]>0)cds[i]-=dt;
   seasonEvents(dt);
   tickBuffs(dt);
   if(dying){
@@ -5453,6 +5661,7 @@ function update(dt){
   mpTick(dt);
   mobs.forEach(m=>updateMob(m,dt));
   mobs=mobs.filter(m=>!m.dead);
+  try{nzTick(dt);}catch(e){}
   updateProj(dt);
   updatePickups(dt);
   if(!DG)updateChunks(dt);
@@ -5545,6 +5754,7 @@ function drawStatus(e,sx,sy,h,alt){
   }
 }
 function drawEntity(e,now){
+  if(e.kind==='mob'&&(e.zmb||e.cps)&&!e._in){nzDraw(e,now);return;}
   const sx=Math.round(e.x-camX),sy=Math.round(e.y-camY);
   if(e.kind==='remote'){mpDraw(e,sx,sy);return;}
   if(e.kind==='player'){
@@ -5893,7 +6103,7 @@ function render(now){
       list.push({y:bottom,k:4,a:h.x*T-camX,b:bottom-48-camY,i});
   });
   const addE=e=>{if(e.x>camX-24&&e.x<camX+VW+24&&e.y>camY-10&&e.y<camY+VH+40)list.push({y:e.y,k:5,e});};
-  npcs.forEach(addE);mobs.forEach(addE);pickups.forEach(addE);P.animals.forEach(a=>list.push({y:a.y,k:6,a}));
+  npcs.forEach(addE);mobs.forEach(addE);nzList(addE);pickups.forEach(addE);P.animals.forEach(a=>list.push({y:a.y,k:6,a}));
   BLD.forEach((b,i)=>{const sp=SPR.bld[i],bottom=(b.y+b.h)*T,bx=b.x*T;if(bx+sp.width>camX&&bx<camX+VW&&bottom>camY&&bottom-sp.height<camY+VH)list.push({y:bottom,k:7,a:bx-camX,b:bottom-sp.height-camY,i});});
   BAN.forEach(p=>{const bx=p[0]*T+8,by=p[1]*T+12;if(bx>camX-30&&bx<camX+VW+30&&by>camY&&by<camY+VH+40)list.push({y:by,k:8,p});});
   DUNGEONS.forEach(d=>{const bx=d.ex*T,bot=(d.ey+2)*T;if(bx+34>camX&&bx<camX+VW&&bot>camY&&bot-36<camY+VH)list.push({y:bot,k:10,d});});list.push({y:P.y,k:5,e:P});if(P.pet&&IN===null&&!DG)list.push({y:petP.k==='mount'?P.y-0.5:petP.y,k:11});
@@ -7016,6 +7226,7 @@ function renderDG(now){
   }
   const vis=e=>e.x>camX-30&&e.x<camX+VW+30&&e.y>camY-10&&e.y<camY+VH+44;
   mobs.forEach(e=>{if(vis(e))list.push({y:e.y,k:5,e});});
+  nzList(e=>{if(vis(e))list.push({y:e.y,k:5,e});});
   pickups.forEach(e=>{if(vis(e))list.push({y:e.y,k:5,e});});
   F.chests.forEach(c=>list.push({y:c.ty*T+14,k:20,c}));
   if(typeof mpAdd==='function')mpAdd(list);
@@ -7277,7 +7488,7 @@ function setupRoleUI(){
   $('bC').style.display=R.shield?'':'none';$('bC').textContent='PERISAI';
   $('bW').style.display=R.id==='pemanah'?'':'none';
   $('bZ').style.display='';
-  $('bA').textContent=R.id==='penyihir'?'SIHIR':R.id==='pemanah'?'TEMBAK':'SERANG';
+  $('bA').textContent=isMgR(R.id)?'SIHIR':R.id==='pemanah'?'TEMBAK':'SERANG';
 }
 function bootGame(){
 try{loadGame();}catch(e){showErr(e);}
@@ -8036,6 +8247,7 @@ function mpReplay(m){
           for(let k=0;k<16;k++){const b=k/16*6.283;sparkFx(px,py-7,k%2?'#fff3a0':'#ffffff',0.5,Math.cos(b)*70,Math.sin(b)*70,2);}
           break;
         case 'gelap':proj.push({t:'gelap',vis:true,x:ox,y:oy,vx:ca*90,vy:sa*90,life:2.2,dmg:0,r:6});break;
+        case 'nz_bola':case 'nz_cakar':case 'nz_nova':case 'nz_drain':case 'nz_teror':nzReplay(id,a,ca,sa,ox,oy,px,py);break;
         case 'heal':
           fx.push({t:0,k:'ring',x:px,y:py-7,r0:4,r1:56,col:'#7dffb0',life:0.55});
           fx.push({t:0,k:'ring',x:px,y:py-7,r0:2,r1:34,col:'#ffffff',life:0.4});
@@ -8120,6 +8332,8 @@ function mpNet(m){
   if(myG()<0||!sameZone(m.g,m.w))return true;
   switch(m.t){
   case 'x':mpReplay(m);return true;
+  case 'nz':nzIn(m,f);return true;
+  case 'nc':NZ.corpses=NZ.corpses.filter(c=>c.id!==String(m.o));return true;
   case 'hl':mpHealIn(m,f);return true;
   case 'di':mpDropIn(m,f);return true;
   case 'dt':mpDropGone(m,f);return true;
@@ -8141,7 +8355,7 @@ function mpNet(m){
   case 'k':{
     const mm=mobs.find(x=>x.id===m.o&&x.net&&!x.dead);if(!mm)return true;
     if(m.by===MPid)killMob(mm,'net');
-    else{mm.dead=true;burst(mm.x,mc(mm),'#ffffff');if(mm.boss&&DG)dgBossShared();try{if(DG&&DG.d.endless&&mm.boss&&mm.tw&&mm.tw%10===0&&!dying&&Math.hypot(P.x-mm.x,P.y-mm.y)<420&&window.EXTAPI)window.EXTAPI.twRewards(mm);}catch(e){}if(Math.hypot(P.x-mm.x,P.y-mm.y)<260&&!dying){gainXp(mm.xp);floatText(mm.x,mc(mm)-16,'+'+mm.xp+' XP','#8fe3ff');}}
+    else{mm.dead=true;nzCorpseAdd(mm,false);burst(mm.x,mc(mm),'#ffffff');if(mm.boss&&DG)dgBossShared();try{if(DG&&DG.d.endless&&mm.boss&&mm.tw&&mm.tw%10===0&&!dying&&Math.hypot(P.x-mm.x,P.y-mm.y)<420&&window.EXTAPI)window.EXTAPI.twRewards(mm);}catch(e){}if(Math.hypot(P.x-mm.x,P.y-mm.y)<260&&!dying){gainXp(mm.xp);floatText(mm.x,mc(mm)-16,'+'+mm.xp+' XP','#8fe3ff');}}
     return true;}
   }
   return false;}
@@ -8228,7 +8442,7 @@ function hudApplyAll(){for(const c of HCTL){if(c.id==='joy'&&joy.on)continue;hud
 function hudVis(){
   const H=SET.hud;
   for(const c of HCTL)c.el.classList.toggle('hhide',!!H.hide[c.id]&&!c.nohide);
-  $('bS').classList.toggle('hnorole',P.role!=='penyihir');
+  $('bS').classList.toggle('hnorole',!isMg());
   rootEl.style.setProperty('--hudop',H.o);
 }
 // buat posisi tersimpan dari posisi layar saat ini (supaya tombol tidak melompat)
@@ -8354,7 +8568,7 @@ function hudPaintSet(){
 })();
 setInterval(()=>{
   $('bR').classList.toggle('on',!!keys.shift);
-  const nr=P.role!=='penyihir';if($('bS').classList.contains('hnorole')!==nr)$('bS').classList.toggle('hnorole',nr);
+  const nr=!isMg();if($('bS').classList.contains('hnorole')!==nr)$('bS').classList.toggle('hnorole',nr);
 },250);
 addEventListener('resize',()=>{joyLayout();hudApplyAll();});
 addEventListener('orientationchange',()=>setTimeout(()=>{joyLayout();hudApplyAll();},200));
@@ -9132,7 +9346,7 @@ const SENJA_R={w:[20,20,20,8,2,400000],h:[12,12,12,4,1,200000],a:[18,18,18,6,2,3
 function senjaMenu(){
   openMenu('🌅 Pandai Besi Senja',()=>{
     const r=[{t:'<small style="color:#9ad">Perlengkapan terkuat. Bahannya hanya jatuh di <b>Dunia 2</b>: 🔥 Inti Api (Zona Api), 🧊 Kristal Es (Zona Es), 🌑 Esensi Gelap (Zona Kegelapan), 🌅 Serpihan Senja (event, bos elit, peti). Pakai 2/4/6 potong untuk bonus Set Senja.</small>',b:'—',off:true,f:()=>{}}];
-    const rid={pemanah:'busur',penyihir:'tongkat',tanker:'perisai'}[P.role]||'pedang';
+    const rid={pemanah:'busur',penyihir:'tongkat',necromancer:'tongkat',tanker:'perisai'}[P.role]||'pedang';
     for(const s of GSLOTS){
       const id=s==='w'?'w_'+rid+'_gs':s+'_gs',g=GEAR[id],q=SENJA_R[s];if(!g)continue;
       const mats=[['inti_api',q[0]],['kristal_es',q[1]],['esensi_gelap',q[2]],['serpihan_senja',q[3]],['segel_bos',q[4]]];
