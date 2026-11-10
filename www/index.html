@@ -318,7 +318,7 @@ body.hudedit #hudbar{display:block}
   <div id="tools">
     <label>Sprite…<input type="file" id="spriteFile" accept="image/*"></label>
     <button id="spriteClr" title="Kembali ke karakter bawaan">↺</button>
-    <button id="mapBtn">Peta</button><button id="worldBtn" title="Pindah dunia (N)">🔒 Dunia</button><button id="invBtn" title="Inventori (I)">🎒 Inv</button><button id="statBtn" title="Stat (C)">📊 Stat</button><button id="eatBtn" title="Makan (G)">🍖 Makan</button><button id="fsBtn" title="Layar penuh">⛶</button><button id="setBtn" title="Seting suara & tombol (O)">⚙ Seting</button><button id="resetBtn">Reset</button><button id="jumpBtn" title="Admin: lompat lantai dungeon (L)" style="display:none">🛠️ Lantai</button><button id="custBtn" title="Kustomisasi karakter">🎨</button><button id="acctBtn">👤</button>
+    <button id="mapBtn">Peta</button><button id="worldBtn" title="Pindah dunia (N)">🔒 Dunia</button><button id="invBtn" title="Inventori (I)">🎒 Inv</button><button id="statBtn" title="Stat (C)">📊 Stat</button><button id="eatBtn" title="Makan (G)">🍖 Makan</button><button id="fsBtn" title="Layar penuh">⛶</button><button id="setBtn" title="Seting suara & tombol (O)">⚙ Seting</button><button id="resetBtn">Reset</button><button id="jumpBtn" title="Admin: lompat lantai dungeon (L)" style="display:none">🛠️ Lantai</button><button id="admBtn" title="Panel Admin & Mode Kreatif (F9)" style="display:none">🛠️ Admin</button><button id="custBtn" title="Kustomisasi karakter">🎨</button><button id="acctBtn">👤</button>
   </div>
 </div>
 
@@ -2109,7 +2109,7 @@ const BASE_SLOTS=36;                                   // slot inventori dasar
 const RANSEL_SLOTS=[6,9,12,16,20,25,30,36,42,50];           // tambahan slot per macam ransel
 const GSN={w:'Senjata',h:'Helm',a:'Zirah',b:'Sepatu',r:'Cincin',k:'Ransel'};
 const GSI={w:'⚔️',h:'🪖',a:'🦺',b:'🥾',r:'💍',k:'🎒'};
-const GWT={pedang:{ic:'⚔️',n:'Pedang',roles:['prajurit','warga']},busur:{ic:'🏹',n:'Busur',roles:['pemanah']},tongkat:{ic:'🪄',n:'Tongkat Sihir',roles:['penyihir','necromancer']},perisai:{ic:'🛡️',n:'Perisai',roles:['tanker']}};
+const GWT={pedang:{ic:'⚔️',n:'Pedang',roles:['prajurit','warga','tamer']},busur:{ic:'🏹',n:'Busur',roles:['pemanah']},tongkat:{ic:'🪄',n:'Tongkat Sihir',roles:['penyihir','necromancer']},perisai:{ic:'🛡️',n:'Perisai',roles:['tanker']}};
 /* 10 macam untuk tiap senjata & perlengkapan (indeks 0-9). TIDAK dijual: didapat dari hadiah boss dungeon.
    Tiap macam punya stat dasar + bonus khusus yang berbeda. */
 const GV=[
@@ -2859,7 +2859,13 @@ const SKILLS={
     {id:'pancing',name:'Pancingan',icon:'📣',mp:3,cd:12,col:'#ff8a5a',desc:'Memaksa musuh jarak dekat (radius 100) mendekat & menyerangmu selama 5 dtk.'},
     {id:'hantam',name:'Hantaman Perisai',icon:'🛡️',mp:3,cd:6,col:'#8ad0ff',desc:'Menghantam musuh di depan, damage + pingsan 1,5 dtk.'},
     {id:'aura',name:'Aura Pelindung',icon:'✨',mp:5,cd:18,col:'#fff3a0',desc:'10 dtk: damage diterima -25% dan HP pulih 1,5%/dtk.'},
-    {id:'kulit',name:'Kulit Batu',icon:'🪨',mp:5,cd:22,col:'#c9b28a',desc:'6 dtk: menyerap damage hingga 30% HP maks & kebal terhempas.'}]
+    {id:'kulit',name:'Kulit Batu',icon:'🪨',mp:5,cd:22,col:'#c9b28a',desc:'6 dtk: menyerap damage hingga 30% HP maks & kebal terhempas.'}],
+  tamer:[
+    {id:'panggil',name:'Panggil Kawanan',icon:'📯',mp:6,cd:14,col:'#f0a35a',desc:'Memanggil semua hewan jinak ke sisimu & memulihkan 30% HP mereka.'},
+    {id:'amuk',name:'Amukan Buas',icon:'🐺',mp:6,cd:20,col:'#ff8a5a',desc:'Damage semua hewan jinakmu +60% selama 8 dtk.'},
+    {id:'cambuk',name:'Cambuk Liar',icon:'🪢',mp:3,cd:5,col:'#c9a66b',desc:'Cambukan ke arah kursor, damage 2,5x + memperlambat musuh 3 dtk.'},
+    {id:'lolong',name:'Lolongan Alfa',icon:'🌙',mp:5,cd:16,col:'#b8c0ff',desc:'Lolongan menakutkan: semua musuh radius 70 pingsan 1,5 dtk.'},
+    {id:'rawat',name:'Rawat Hewan',icon:'💚',mp:8,cd:22,col:'#7dffb0',desc:'Memulihkan 60% HP semua hewan jinak & 20% HP-mu.'}]
 };
 const POOL=()=>isMg()?SPELLS:(SKILLS[P.role]||[]);
 const QUESTS=[
@@ -2935,7 +2941,7 @@ const LEGACY_KEY='pixel_rpg_save_v2';         // save lama (sebelum ada akun)
 const ACC_KEY='pixel_rpg_accounts_v1', SESSION_KEY='pixel_rpg_session_v1', SAVE_PFX='pixel_rpg_save_acc:';
 const W1_KEY='pixel_rpg_save_server1_local_v1';   // Server 1 (Dunia Sendiri): disimpan di localStorage perangkat, tanpa akun
 let SAVE_KEY=null;                             // diisi setelah login
-const SAVE_FIELDS=['v2','x','y','hp','maxHp','mp','maxMp','lvl','xp','coins','weapon','sel','hasBow','sp','qdone','qact','st','bag','land','crops','animals','homes','hf','selSeed','selF','vis','role','bhp','bmp','food','name','look','stats','pts','eq','dg','bk','gear','up','w','w2','wd','sb','ins','rsp','cos','pet','tax','mk','est','gq'];
+const SAVE_FIELDS=['v2','x','y','hp','maxHp','mp','maxMp','lvl','xp','coins','weapon','sel','hasBow','sp','qdone','qact','st','bag','land','crops','animals','homes','hf','selSeed','selF','vis','role','bhp','bmp','food','name','look','stats','pts','eq','dg','bk','gear','up','w','w2','wd','sb','ins','rsp','cos','pet','tax','mk','est','gq','pk'];
 const WFIELDS=SAVE_FIELDS.filter(k=>!['role','name','look','w','w2','wd','sb','bag','gear','up','ins','rsp','cos','pet','mk','gq'].includes(k));   // data yang terpisah per dunia
 const ROLES={
   warga:{id:'warga',n:'Warga Desa',ic:'🧑‍🌾',col:'#7bd88f',hp0:8,hpl:1,def:1,mp0:10,mpl:1,mpr:1,sword:0.3,bow:0,spell:0,maxLvl:700,farm:true,xpMul:0.5,
@@ -2951,13 +2957,16 @@ const ROLES={
     ket:3,atk:5,hint:'🔮 Penyihir: klik kiri/kanan atau F untuk sihir. 1-3 pilih sihir, K = pasang 3 dari 7 sihir.',
     desc:'Hanya memakai sihir. Ketahanan sedang, sihir sangat kuat. 7 sihir (termasuk sihir penyembuh area) terbuka seiring level; pasang 3 sekaligus.'},
   necromancer:{id:'necromancer',n:'Necromancer',ic:'💀',col:'#a855f7',hp0:14,hpl:2.5,def:0.8,mp0:30,mpl:4,mpr:1.4,sword:0,bow:0,spell:0.3,maxLvl:1200,farm:false,xpMul:1,
-    ket:3,atk:3,hint:'💀 Necromancer: sihir seperti penyihir. Dekati mayat monster (berbaring 30 detik): E = ambil loot, R = bangkitkan jadi pasukan (butuh MP).',
-    desc:'Kekuatan sedang, ketahanan sedang. Bisa membangkitkan monster yang terbunuh (stat sama persis, berwarna ungu-hitam dengan partikel gelap) untuk ikut bertarung. Slot: Lv1=3, Lv2=5, Lv3=6, lalu +1 tiap level. Tiap bangkit memakai MP. Monster tetap di slot sampai mati. Pilih: ambil loot atau bangkitkan.'},
+    ket:3,atk:3,hint:'💀 Necromancer: sihir seperti penyihir. Dekati mayat monster (berbaring 15 detik): E = ambil loot, R = bangkitkan jadi pasukan (butuh MP).',
+    desc:'Kekuatan sedang, ketahanan sedang. Bisa membangkitkan monster & bos yang terbunuh (kecuali di dungeon) (stat sama persis, berwarna ungu-hitam dengan partikel gelap) untuk ikut bertarung. Slot: Lv1=3, Lv2=5, Lv3=6, lalu +1 tiap level. Tiap bangkit memakai MP. Monster tetap di slot sampai mati. Pilih: ambil loot atau bangkitkan.'},
+  tamer:{id:'tamer',n:'Beast Tamer',ic:'🐾',col:'#f0a35a',hp0:14,hpl:2.5,def:0.8,mp0:30,mpl:4,mpr:1.4,sword:0.35,bow:0,spell:0,maxLvl:1200,farm:false,xpMul:1,
+    ket:3,atk:3,hint:'🐾 Beast Tamer: 5 skill (K). Serang monster sampai sekarat (berbaring 15 detik), dekati lalu R = beri makan sampai HP penuh = jinak (butuh MP), E = ambil loot.',
+    desc:'Kekuatan sedang, ketahanan sedang. Menjinakkan hewan & monster (termasuk Bos di luar dungeon) dengan cara: kalahkan sampai sekarat, lalu beri makanan agar HP-nya terisi. Jika HP penuh, penjinakan berhasil (memakai MP) dan ia ikut bertarung dengan warna & kekuatan yang sama persis. Pemain lain ikut melihatnya. Slot: Lv1=3, Lv2=5, Lv3=6, lalu +1 tiap level. Hewan tetap di slot sampai mati. Pilih: ambil loot atau beri makan untuk menjinakkan.'},
   tanker:{id:'tanker',n:'Tanker',ic:'🛡️',col:'#6ab8ff',hp0:28,hpl:5,def:0.5,mp0:10,mpl:1,mpr:1,sword:0.3,bow:0,spell:0,maxLvl:1200,farm:false,xpMul:1,shield:true,
     ket:5,atk:3,hint:'🛡️ Tanker: TAHAN klik kanan / F = perisai. Tombol 1-3 = skill, K = pilih 3 dari 5 skill.',
     desc:'Pengguna perisai. Ketahanan sangat kuat, serangan sedang. Tahan klik kanan/F untuk bertahan. Punya 5 skill, pasang 3 sekaligus.'}
 };
-const ROLE_IDS=['warga','prajurit','pemanah','penyihir','necromancer','tanker'];
+const ROLE_IDS=['warga','prajurit','pemanah','penyihir','necromancer','tamer','tanker'];
 const SPELL_LV=[1,5,12,25,40,60,3];   // sihir ke-7 (Cahaya Penyembuh) terbuka di Lv 3
 const FISH=[{k:'Ikan Kecil',sell:6,xp:4,w:50},{k:'Ikan Mas',sell:14,xp:8,w:30},{k:'Ikan Besar',sell:30,xp:15,w:15},{k:'Ikan Koi',sell:55,xp:25,w:8},{k:'Ikan Emas',sell:90,xp:40,w:5}];
 const RL=()=>ROLES[(typeof P!=='undefined'&&P&&P.role)||'warga'];
@@ -3049,6 +3058,7 @@ function loadGame(){
       {const st=(P.stats&&typeof P.stats==='object')?P.stats:{};P.stats={};STATK.forEach(k=>P.stats[k]=Math.max(0,Math.floor(+st[k])||0));
        const sp=Math.floor(+s.p.pts);
        P.pts=(s.p.stats===undefined||!isFinite(sp))?Math.max(0,5+Math.max(0,(P.lvl||1)-1)-statSum()):Math.max(0,sp);}
+      P.pk=Array.isArray(P.pk)?P.pk.filter(e=>e&&MOBS[e.type]&&e.maxHp>0).slice(0,60).map(e=>({id:String(e.id||''),type:e.type,tier:e.tier|0,lvl:Math.max(1,e.lvl|0),maxHp:+e.maxHp,hp:Math.max(1,Math.min(+e.maxHp,+e.hp||+e.maxHp)),dmg:+e.dmg||1,spd:+e.spd||1,bs:!!e.bs,tame:!!e.tame,dir:(e.dir|0)&3})):[];
       P.bhp=P.bhp||0;P.bmp=P.bmp||0;if(!P.bk||typeof P.bk!=='object'||Array.isArray(P.bk))P.bk={};
       fixGear();
       collected=new Set(s.col||[]);picked=new Set(s.flw||[]);gtime=s.time||0;shownIntro=true;
@@ -3058,7 +3068,7 @@ function loadGame(){
 function saveGame(){
   if(!SAVE_KEY||!started)return;
   try{
-    const p={};SAVE_FIELDS.forEach(k=>p[k]=P[k]);if(IN!==null){p.x=OX;p.y=OY;}if(DG){p.x=DG.ox;p.y=DG.oy;}
+    const p={};SAVE_FIELDS.forEach(k=>p[k]=P[k]);try{if(nzR())p.pk=nzPkSave();}catch(_){}if(IN!==null){p.x=OX;p.y=OY;}if(DG){p.x=DG.ox;p.y=DG.oy;}
     (window.__ls?__ls.set:(k,v)=>localStorage.setItem(k,v))(SAVE_KEY,JSON.stringify({p,col:[...collected],flw:[...picked],time:gtime,ts:Date.now()}));
     if(CL.uid&&Date.now()-CL.t>10000){CL.t=Date.now();cloudPush();}
   }catch(e){}
@@ -3751,6 +3761,7 @@ function updateHUD(){
   const vt2=DG?'🕳️ '+DG.d.name+' · Lt '+DG.f+'/'+DG.d.floors+' · musuh '+mobs.length:vtxt;if(DG)$('vtag').style.color=DG.d.col;if($('vtag').textContent!==vt2)$('vtag').textContent=vt2;
   {const wl=canWorld2()||WORLD===2?'🌀 Dunia '+WORLD:'🔒 Dunia';const wb=$('worldBtn');if(wb&&wb.textContent!==wl)wb.textContent=wl;}
   {const jb=$('jumpBtn'),sh=(DG&&isAdmin())?'':'none';if(jb&&jb.style.display!==sh)jb.style.display=sh;}
+  {const ab=$('admBtn'),sh2=(isAdmin()&&P.role)?'':'none';if(ab&&ab.style.display!==sh2)ab.style.display=sh2;}
   $('selrow').textContent=(IN===null&&!RL().farm)?RL().hint:IN!==null?(SH?'🛎️ Tekan E di depan meja':'🪑 '+FURN[P.selF].n+' x'+(P.bag.furn[FURN[P.selF].id]||0)+' (Z/X)'):'🌱 '+CROPS[CK[P.selSeed]].n+' x'+P.bag.seed[CK[P.selSeed]]+' (Z) 🌾'+P.bag.feed;
   {let bb=null,bd2=1e9;for(const m of mobs){if(!m.boss||m.dead)continue;const dd=Math.hypot(m.x-P.x,m.y-P.y);if(dd<260&&dd<bd2){bd2=dd;bb=m;}}
    const el=$('bossbar');
@@ -4692,6 +4703,7 @@ function fixEq(fill){
   e=e.map(v=>(Number.isInteger(v)&&v>=0&&v<n)?v:-1);
   e=e.map((v,i)=>(v>=0&&e.indexOf(v)!==i)?-1:v);
   if(mage)e=e.map(v=>(v>=0&&!P.sp[v])?-1:v);
+  if(P.role==='tamer'&&!P.tsk){P.tsk=1;if(e.every(v=>v<0))fill=true;}
   if(fill)for(let i=0;i<3;i++){
     if(e[i]>=0)continue;
     for(let j=0;j<n;j++){if(!e.includes(j)&&(!mage||P.sp[j])){e[i]=j;break;}}
@@ -4711,7 +4723,7 @@ function slotPress(n){
   useSkill(idx);
 }
 function buffTxt(){
-  const B=P.buf||{},N={wall:'🧱Dinding',aura:'✨Aura',stone:'🪨Kulit Batu',cry:'📢Perang',haste:'💨Cepat'};
+  const B=P.buf||{},N={wall:'🧱Dinding',aura:'✨Aura',stone:'🪨Kulit Batu',cry:'📢Perang',haste:'💨Cepat',amuk:'🐺Amuk'};
   let s='';for(const k in N)if(B[k]>0)s+=' '+N[k]+' '+Math.ceil(B[k])+'d';
   return s;
 }
@@ -4730,7 +4742,7 @@ function tickBuffs(dt){
 }
 function drawBuffFx(sx,sy,now){
   const B=P.buf;if(!B)return;
-  const col=B.stone>0?'#c9b28a':B.wall>0?'#6ab8ff':B.aura>0?'#fff3a0':B.cry>0?'#ff7a6a':B.haste>0?'#cfe3ff':null;
+  const col=B.stone>0?'#c9b28a':B.wall>0?'#6ab8ff':B.aura>0?'#fff3a0':B.cry>0?'#ff7a6a':B.amuk>0?'#f0a35a':B.haste>0?'#cfe3ff':null;
   if(!col)return;
   ctx.save();ctx.globalAlpha=0.35+0.2*Math.sin(now*8);ctx.strokeStyle=col;ctx.lineWidth=1;
   ctx.beginPath();ctx.ellipse(sx,sy-9,10,13,0,0,6.283);ctx.stroke();ctx.restore();
@@ -4855,6 +4867,42 @@ const SK_FN={
   kulit(){
     P.buf.stone=6;P.absorb=Math.max(1,Math.round(P.maxHp*0.3));
     floatText(P.x,P.y-30,'Kulit Batu (+'+P.absorb+')','#c9b28a');ringFx(P.x,P.y-7,28,'#c9b28a',0.45);return true;
+  },
+  /* ===== BEAST TAMER ===== */
+  panggil(){
+    let n=0;
+    for(const a of NZ.allies){
+      const an=Math.random()*6.283,tx=P.x+Math.cos(an)*16,ty=P.y+Math.sin(an)*12;
+      if(!blocked(tx,ty)){a.x=tx;a.y=ty;}
+      a.hp=Math.min(a.maxHp,a.hp+a.maxHp*0.3);n++;
+      ringFx(a.x,a.y-6,14,'#f0a35a',0.35);
+    }
+    ringFx(P.x,P.y-7,36,'#f0a35a',0.5);
+    floatText(P.x,P.y-30,n?('📯 '+n+' hewan dipanggil'):'Belum punya hewan jinak','#f0a35a');return true;
+  },
+  amuk(){
+    P.buf.amuk=8;floatText(P.x,P.y-30,'AMUKAN BUAS! +60%','#ff8a5a');
+    ringFx(P.x,P.y-7,34,'#ff8a5a',0.5);
+    for(const a of NZ.allies)ringFx(a.x,a.y-6,16,'#ff8a5a',0.4);return true;
+  },
+  cambuk(a,ca,sa){
+    const cx=P.x+ca*20,cy=P.y-7+sa*20,dmg=skillDmg(2.5);
+    fx.push({k:'slash',x:P.x,y:P.y-7,a,t:0,life:0.2});ringFx(cx,cy,22,'#c9a66b',0.3);
+    for(const m of mobsPv()){if(m.dead)continue;
+      if(Math.hypot(m.x-cx,mc(m)-cy)<24+MOBS[m.type].rad){hitMob(m,dmg,null,{by:'sword',kx:ca*140,ky:sa*140,kb:0.2});if(!m.dead)nzDebuff(m,'slow',3);}}
+    P.atk=0.3;return true;
+  },
+  lolong(){
+    ringFx(P.x,P.y-7,70,'#b8c0ff',0.6);ringFx(P.x,P.y-7,40,'#ffffff',0.4);
+    let n=0;
+    for(const m of mobsPv()){if(m.dead||m.pvp)continue;
+      if(Math.hypot(m.x-P.x,m.y-P.y)<70+MOBS[m.type].rad){nzDebuff(m,'stun',1.5);n++;}}
+    floatText(P.x,P.y-30,n?('🌙 '+n+' musuh pingsan'):'🌙 Auuu!','#b8c0ff');return true;
+  },
+  rawat(){
+    for(const a of NZ.allies){a.hp=Math.min(a.maxHp,a.hp+a.maxHp*0.6);ringFx(a.x,a.y-6,14,'#7dffb0',0.4);sparkFx(a.x,a.y-8,'#7dffb0',0.5,0,-20,2);}
+    const n=Math.round(P.maxHp*0.2);P.hp=Math.min(P.maxHp,P.hp+n);
+    floatText(P.x,P.y-30,'💚 +'+n+' HP','#7dffb0');ringFx(P.x,P.y-7,30,'#7dffb0',0.5);return true;
   }
 };
 function sparkBurst(x,y,col){for(let k=0;k<7;k++)sparkFx(x,y-2,col,0.4,(Math.random()-0.5)*60,-10-Math.random()*25,2);}
@@ -4968,6 +5016,7 @@ function hitMob(m,dmg,elem,o){
   o=o||{};
   hitSnd(o,elem);
   if(m.pvp){pvpHit(m,dmg,elem,o);return;}   // PvP: target = pemain lain
+  dmg=admDmg(dmg,o);   // admin: pengali serangan
   if(m.net){mpHitNet(m,dmg,elem,o);return;}
   m.lastSrc=MPsrc;
   const d=MOBS[m.type];
@@ -5002,19 +5051,20 @@ function killMob(m,by){
   const d=MOBS[m.type];
   burst(m.x,mc(m),m.type==='slime'?(WORLD===2?SL2:SL)[m.tier][0]:d.col);deathFx(m,m.type==='slime'?(WORLD===2?SL2:SL)[m.tier][0]:d.col);
   floatText(m.x,mc(m)-16,'+'+m.xp+' XP','#8fe3ff');
-  if(m.boss||m.minion)mobRewards(m);else nzCorpseAdd(m,true);
+  if(m.boss||m.minion){mobRewards(m);nzCorpseAdd(m,true);}else nzCorpseAdd(m,true);
   if(m.boss&&!DG)bossReward(m);
 }
 
 /* ================= NECROMANCER & MAYAT ================= */
 function isMg(){return !!P&&(P.role==='penyihir'||P.role==='necromancer');}
 function isMgR(id){return id==='penyihir'||id==='necromancer';}
-const NZ={allies:[],corpses:[],remote:new Map(),bc:0,sent:false,near:null,nk:'',CAP:40,LIFE:30};   // CAP = batas slot (performa & sinkron)
+const NZ={allies:[],corpses:[],remote:new Map(),bc:0,sent:false,near:null,nk:null,CAP:40,LIFE:15};   // CAP = batas slot (performa & sinkron) · LIFE = DETIK mayat mob bertahan sebelum hilang (ubah angka ini)
 const NZF=(typeof CanvasRenderingContext2D!=='undefined')&&('filter' in CanvasRenderingContext2D.prototype);
 const nzZone=()=>(DG?'d'+DG.f:IN!==null?'i':'w')+WORLD;
 const nzSlots=l=>Math.min(NZ.CAP,l<=1?3:l===2?5:l===3?6:6+(l-3));
-const nzCost=c=>Math.min(60,Math.round(10+(c.lvl||1)*0.5+(c.tier||0)*2));
-const nzHud=()=>P&&P.role==='necromancer'?' 💀'+NZ.allies.length+'/'+nzSlots(P.lvl):'';
+const nzCost=c=>Math.min(c.bs?90:60,Math.round(10+(c.lvl||1)*0.5+(c.tier||0)*2+(c.bs?30:0)));
+const nzR=()=>!!P&&(P.role==='necromancer'||P.role==='tamer');
+const nzHud=()=>P&&P.role==='necromancer'?' 💀'+NZ.allies.length+'/'+nzSlots(P.lvl):(P&&P.role==='tamer'?' 🐾'+NZ.allies.length+'/'+nzSlots(P.lvl):'');
 function mobRewards(m){
   const lvm=1+((m.lvl||1)-1)*0.08;
   const cv_=Math.max(1,Math.round(lvm*({slime:1+(m.tier||0),bat:1,goblin:3,skeleton:4,golem:12,ghost:3,rusa:2,kelinci:1,ayam_liar:1,kerbau:4,beruang:5,serigala:3,harimau:6,buaya:4}[m.type]||1)));
@@ -5036,30 +5086,92 @@ function mobRewards(m){
   }
 }
 function nzCorpseAdd(m,mine){
-  if(!m||m.boss||m.minion||m.pvp||m.zmb)return;
+  if(!m||m.pvp||m.zmb||DG)return;
   if(NZ.corpses.some(c=>c.id===m.id))return;
-  NZ.corpses.push({kind:'mob',cps:true,id:m.id,type:m.type,tier:m.tier||0,lvl:m.lvl||1,x:m.x,y:m.y,hp:m.maxHp,maxHp:m.maxHp,dmg:m.dmg,xp:0,spd:m.spd||1,dir:m.dir||0,
-    anim:0,walkT:0,t:Math.random()*5,flash:0,hit:0,hop:0,lunge:0,aim:0,wind:0,fade:1,boss:false,dead:false,life:NZ.LIFE,mine:!!mine,zk:nzZone()});
+  NZ.corpses.push({kind:'mob',cps:true,id:m.id,type:m.type,tier:m.tier||0,lvl:m.lvl||1,x:m.x,y:m.y,hp:m.maxHp,maxHp:m.maxHp,dmg:m.dmg,xp:0,spd:m.spd||1,dir:m.dir||0,th:Math.max(1,Math.round(m.maxHp*0.08)),
+    anim:0,walkT:0,t:Math.random()*5,flash:0,hit:0,hop:0,lunge:0,aim:0,wind:0,fade:1,boss:false,dead:false,life:m.boss?30:NZ.LIFE,l0:m.boss?30:NZ.LIFE,bs:!!m.boss,nl:!!(m.boss||m.minion),mine:!!mine,zk:nzZone()});
   if(NZ.corpses.length>60)NZ.corpses.shift();
 }
-function nzRemove(c){NZ.corpses=NZ.corpses.filter(x=>x!==c);NZ.nk='';if(MPsb)mpOut({t:'nc',o:c.id});}
+function nzRemove(c){NZ.corpses=NZ.corpses.filter(x=>x!==c);if(NZ.near===c)NZ.near=null;NZ.nk=null;const m_=document.getElementById('nzmenu');if(m_)m_.style.display='none';if(MPsb)mpOut({t:'nc',o:c.id});}
 function nzClaimLoot(){
-  const c=NZ.near;if(!c||!c.mine||dying||IN!==null||c.zk!==nzZone())return false;
+  const c=NZ.near;if(!c||!c.mine||c.nl||dying||IN!==null||c.zk!==nzZone())return false;
   nzRemove(c);mobRewards(c);floatText(c.x,c.y-16,'Loot diambil','#ffe066');return true;
 }
+const NZ_NOTAME=[];   // jenis yang TIDAK bisa dijinakkan Beast Tamer
+function nzFeedItem(){
+  const L=[];
+  for(const id in FOODS)if(itemGet('food',id)>0)L.push({cat:'food',id,f:FOODS[id].f});
+  for(const id in LOOT)if(LOOT[id].eat&&itemGet('loot',id)>0)L.push({cat:'loot',id,f:LOOT[id].eat});
+  for(const id in EDIBLE)if(itemGet('prod',id)>0)L.push({cat:'prod',id,f:EDIBLE[id][1]});
+  L.sort((a,b)=>b.f-a.f);return L[0]||null;
+}
+function nzTame(){
+  const c=NZ.near;if(!c||P.role!=='tamer'||dying||IN!==null||c.zk!==nzZone())return false;
+  if(NZ_NOTAME.includes(c.type)||c.zmb){toast('🚫 Goblin & Kerangka tidak bisa dijinakkan');return true;}
+  if(nzPk().length>=nzPkCap()){toast('🎒 Kantong penuh ('+nzPk().length+'/'+nzPkCap()+') · istirahatkan/lepas dulu');return true;}
+  if(!(c.th>0))c.th=1;
+  if(c.th<c.maxHp){
+    const it=nzFeedItem();
+    if(!it){toast('🍖 Tidak punya makanan untuk diberikan');return true;}
+    itemSet(it.cat,it.id,itemGet(it.cat,it.id)-1);
+    const add=Math.max(1,Math.ceil(c.maxHp*Math.min(1,Math.max(0.15,it.f/50))));
+    c.th=Math.min(c.maxHp,c.th+add);
+    burst(c.x,c.y-6,'#ff8fb3');floatText(c.x,c.y-20,'🍖 +'+add+' HP','#7dffb0');
+  }
+  if(c.th<c.maxHp){toast('🐾 Belum jinak: HP '+Math.round(c.th)+'/'+c.maxHp+' · beri makan lagi');return true;}
+  const cost=nzCost(c);
+  if(P.mp<cost){toast('💧 HP penuh, tapi MP kurang untuk menjinakkan ('+Math.floor(P.mp)+'/'+cost+') · tekan R lagi');return true;}
+  P.mp-=cost;nzRemove(c);
+  nzPk().push(nzEntry(c,true));nzPkUi();
+  burst(c.x,c.y-6,'#ff8fb3');floatText(c.x,c.y-20,'🐾 Jinak! -'+cost+' MP','#ffb3cf');
+  toast('🐾 '+(MOBS[c.type]?MOBS[c.type].name:'Hewan')+' jinak & masuk Kantong · tekan B untuk memanggil');
+  return true;
+}
 function nzRevive(){
+  if(P.role==='tamer')return nzTame();
   const c=NZ.near;if(!c||P.role!=='necromancer'||dying||IN!==null||c.zk!==nzZone())return false;
-  const cap=nzSlots(P.lvl);
-  if(NZ.allies.length>=cap){toast('💀 Slot pasukan penuh ('+NZ.allies.length+'/'+cap+')');return true;}
+  if(nzPk().length>=nzPkCap()){toast('🎒 Kantong penuh ('+nzPk().length+'/'+nzPkCap()+')');return true;}
   const cost=nzCost(c);
   if(P.mp<cost){toast('💧 MP kurang ('+Math.floor(P.mp)+'/'+cost+')');return true;}
   P.mp-=cost;nzRemove(c);
-  const a=makeMob(c.type,c.x,c.y,c.tier,null,0,0,c.lvl,true);
-  a.hp=a.maxHp=c.maxHp;a.dmg=c.dmg;a.spd=c.spd;a.xp=0;a.zmb=true;a.cd=0.5;a.hcd=1;a.dir=c.dir;
-  NZ.allies.push(a);burst(c.x,c.y-6,'#8a3cff');floatText(c.x,c.y-20,'💀 Bangkit! -'+cost+' MP','#c07bff');
+  nzPk().push(nzEntry(c,false));nzPkUi();
+  burst(c.x,c.y-6,'#8a3cff');floatText(c.x,c.y-20,'💀 Bangkit! -'+cost+' MP','#c07bff');
+  toast('💀 '+(MOBS[c.type]?MOBS[c.type].name:'Mayat')+' masuk Kantong · tekan B untuk memanggil');
   return true;
 }
+/* ---- KANTONG (pocket): simpan mob bangkitan/jinak; Summon = keluarkan, Istirahatkan = simpan lagi ---- */
+const nzPk=()=>{if(!Array.isArray(P.pk))P.pk=[];return P.pk;};
+const nzPkCap=()=>nzSlots(P.lvl);
+const nzEntry=(c,tame)=>({id:String(c.id||('pk'+Math.random().toString(36).slice(2,9))),type:c.type,tier:c.tier|0,lvl:c.lvl||1,maxHp:c.maxHp,hp:Math.max(1,Math.min(c.maxHp,Math.round(c.hp>0?c.hp:c.maxHp))),dmg:c.dmg,spd:c.spd,bs:!!c.bs,tame:!!tame,dir:(c.dir|0)&3});
+function nzPkSave(){
+  const out=nzPk().map(e=>Object.assign({},e));
+  for(const a of NZ.allies)if(a.hp>0)out.push(nzEntry(a,a.tame));
+  return out.slice(0,60);
+}
+function nzSummon(i){
+  if(!nzR()||dying)return;
+  const pk=nzPk(),e=pk[i];if(!e)return;
+  if(IN!==null){toast('🚫 Tidak bisa memanggil di dalam ruangan');return;}
+  if(NZ.allies.length>=nzSlots(P.lvl)){toast('Slot aktif penuh ('+NZ.allies.length+'/'+nzSlots(P.lvl)+') · istirahatkan satu dulu');return;}
+  const a=makeMob(e.type,P.x,P.y,e.tier,null,0,0,e.lvl,true);
+  a.hp=e.hp;a.maxHp=e.maxHp;a.dmg=e.dmg;a.spd=e.spd;a.xp=0;a.boss=false;a.bs=e.bs;a.zmb=true;a.tame=!!e.tame;a.cd=0.5;a.hcd=1;a.dir=e.dir;
+  let px=P.x+(Math.random()-0.5)*24,py=P.y+8+Math.random()*10;if(blocked(px,py)){px=P.x;py=P.y;}
+  a.x=px;a.y=py;
+  pk.splice(i,1);NZ.allies.push(a);
+  ringFx(a.x,a.y-6,16,e.tame?'#ff8fb3':'#8a3cff',0.4);burst(a.x,a.y-6,e.tame?'#ff8fb3':'#8a3cff');
+  floatText(a.x,a.y-20,'📤 Summon','#c07bff');nzPkUi();
+}
+function nzRest(a){
+  if(!nzR()||!a)return;
+  const pk=nzPk();
+  if(pk.length>=nzPkCap()){toast('🎒 Kantong penuh ('+pk.length+'/'+nzPkCap()+')');return;}
+  pk.push(nzEntry(a,a.tame));NZ.allies=NZ.allies.filter(x=>x!==a);
+  ringFx(a.x,a.y-6,14,'#9aa',0.35);floatText(a.x,a.y-20,'😴 Istirahat','#b8c0ff');nzPkUi();
+}
+function nzSummonAll(){for(let i=0;i<nzPk().length&&NZ.allies.length<nzSlots(P.lvl);)nzSummon(i);}
+function nzRestAll(){for(const a of NZ.allies.slice())nzRest(a);}
 function nzTick(dt){
+  if(P&&Array.isArray(P.pk))for(const e of P.pk)if(e.hp<e.maxHp)e.hp=Math.min(e.maxHp,e.hp+e.maxHp*0.01*dt);
   for(const c of NZ.corpses){c.life-=dt;c.t+=dt;}
   NZ.corpses=NZ.corpses.filter(c=>c.life>0);
   const now=performance.now();
@@ -5068,7 +5180,7 @@ function nzTick(dt){
     for(const a of o.list){const dx=a.tx-a.x,dy=a.ty-a.y;if(dx*dx+dy*dy>2500){a.x=a.tx;a.y=a.ty;}else{const q=Math.min(1,dt*10);a.x+=dx*q;a.y+=dy*q;}
       a.t+=dt;if(a.walkT>0){a.walkT-=dt;a.anim+=dt*8;}a.hop=(a.type==='slime'&&a.walkT>0)?0.02+0.3*Math.abs(Math.sin(a.t*6)):0;}
   });
-  if(P.role!=='necromancer'){NZ.allies.length=0;}
+  if(!nzR()){NZ.allies.length=0;}
   else{
     for(const a of NZ.allies){
       a.t+=dt;if(a.walkT>0)a.walkT-=dt;if(a.cd>0)a.cd-=dt;if(a.hcd>0)a.hcd-=dt;if(a.flash>0)a.flash-=dt;if(a.lunge>0)a.lunge-=dt;
@@ -5083,7 +5195,7 @@ function nzTick(dt){
         if(d>reach-2){mx=dx/d;my=dy/d;}
         a.dir=dirFromVec(dx,dy);
         if(d<=reach+4&&a.cd<=0){a.cd=0.9;a.lunge=0.15;
-          hitMob(tg,Math.max(2,a.dmg+Math.floor(a.lvl/3)),null,{by:'ally',kx:dx/d*40,ky:dy/d*40,kb:0.1});}
+          hitMob(tg,Math.max(2,Math.round((a.dmg+Math.floor(a.lvl/3))*(P.buf&&P.buf.amuk>0?1.6:1))),null,{by:'ally',kx:dx/d*40,ky:dy/d*40,kb:0.1});}
       }else if(od>36){const dx=P.x-a.x,dy=P.y-a.y;mx=dx/od;my=dy/od;if(od>90)sp*=1.8;a.dir=dirFromVec(dx,dy);}
       if(mx||my){
         if((MOBS[a.type]||{}).fly)moveFly(a,mx*sp*dt,my*sp*dt);else moveEnt(a,mx*sp*dt,my*sp*dt,true);
@@ -5104,19 +5216,20 @@ function nzTick(dt){
     NZ.bc=0.22;
     if(NZ.allies.length||NZ.sent){
       NZ.sent=NZ.allies.length>0;const q=v=>Math.round(v*10)/10;
-      mpOut({t:'nz',a:NZ.allies.slice(0,NZ.CAP).map(a=>[a.type,a.tier,a.lvl,q(a.x),q(a.y),Math.round(a.hp),a.maxHp,a.dir&3,a.walkT>0?1:0,a.id])});
+      mpOut({t:'nz',a:NZ.allies.slice(0,NZ.CAP).map(a=>[a.type,a.tier,a.lvl,q(a.x),q(a.y),Math.round(a.hp),a.maxHp,a.dir&3,a.walkT>0?1:0,a.id,a.tame?1:0])});
     }
   }
   let near=null,bd=26;
   if(!dying&&IN===null){const zk=nzZone();for(const c of NZ.corpses){if(c.zk!==zk)continue;const d=Math.hypot(P.x-c.x,P.y-c.y);if(d<bd){bd=d;near=c;}}}
   NZ.near=near;
-  const nec=P.role==='necromancer',key=near?near.id+':'+(near.mine?1:0)+(nec?1:0):'';
+  const nec=nzR(),tmr=P.role==='tamer',key=near?near.id+':'+(near.mine?1:0)+(nec?1:0):'';
   if(key!==NZ.nk){
     NZ.nk=key;const el=document.getElementById('nzmenu');
     if(el){el.style.display=near&&(near.mine||nec)?'flex':'none';
-      document.getElementById('nzLoot').style.display=near&&near.mine?'':'none';
-      const r=document.getElementById('nzRev');r.style.display=nec?'':'none';if(near)r.textContent='💀 Bangkitkan [R] · '+nzCost(near)+' MP';}
+      document.getElementById('nzLoot').style.display=near&&near.mine&&!near.nl?'':'none';
+      const r=document.getElementById('nzRev');r.style.display=nec?'':'none';if(near&&!tmr)r.innerHTML='💀 Bangkitkan <span class="nzk">[R]</span> · '+nzCost(near)+' MP';}
   }
+  if(tmr&&near){const r=document.getElementById('nzRev'),h='🍖 Beri Makan <span class="nzk">[R]</span> · '+(NZ_NOTAME.includes(near.type)?'tak bisa dijinakkan':Math.round(near.th||0)+'/'+near.maxHp+' HP · '+nzCost(near)+' MP');if(r&&r._h!==h){r._h=h;r.innerHTML=h;}}
 }
 function nzIn(m,f){
   if(!f||f===MPid)return;
@@ -5128,7 +5241,7 @@ function nzIn(m,f){
     if(!Array.isArray(r)||!MOBS[r[0]])return null;
     const id=String(r[9]).slice(0,40);let a=old.get(id);
     if(!a)a={kind:'mob',zmb:true,remote:true,id,type:r[0],tier:r[1]|0,lvl:Math.max(1,r[2]|0),x:+r[3]||0,y:+r[4]||0,anim:0,walkT:0,t:Math.random()*5,flash:0,hit:0,hop:0,lunge:0,aim:0,wind:0,fade:1,boss:false,dmg:0,dead:false};
-    a.tx=+r[3]||0;a.ty=+r[4]||0;a.hp=+r[5];a.maxHp=+r[6]||a.hp;a.dir=(r[7]|0)&3;if(r[8])a.walkT=0.2;
+    a.tame=!!r[10];a.tx=+r[3]||0;a.ty=+r[4]||0;a.hp=+r[5];a.maxHp=+r[6]||a.hp;a.dir=(r[7]|0)&3;if(r[8])a.walkT=0.2;
     return a;}).filter(Boolean);
 }
 function nzList(add){
@@ -5143,16 +5256,19 @@ function nzDraw(e,now){
   if(e.cps){
     ctx.translate(sx,sy-2);ctx.rotate(1.5708);ctx.translate(-sx,-(sy-2));ctx.globalAlpha=0.85;
     if(NZF)ctx.filter='grayscale(.6) brightness(.8)';
-  }else{
+  }else if(!e.tame){
     ctx.fillStyle='rgba(90,30,140,.30)';ctx.beginPath();ctx.ellipse(sx,sy-8,9,12,0,0,6.283);ctx.fill();
     if(NZF)ctx.filter='brightness(.62) sepia(1) hue-rotate(235deg) saturate(2.4)';
   }
   try{drawEntity(e,now);}finally{ctx.restore();e._in=false;}
   if(e.cps){
-    const f=Math.max(0,e.life/NZ.LIFE);
+    const f=Math.max(0,e.life/(e.l0||NZ.LIFE));
     ctx.fillStyle='rgba(0,0,0,.65)';ctx.fillRect(sx-9,sy-17,18,4);
     ctx.fillStyle=e.mine?'#ffd23f':'#9aa';ctx.fillRect(sx-8,sy-16,Math.round(16*f),2);
     if(e===NZ.near){ctx.strokeStyle='#c07bff';ctx.strokeRect(sx-10,sy-18,20,6);}
+    if(P&&P.role==='tamer'&&!NZ_NOTAME.includes(e.type)){const f2=Math.max(0,Math.min(1,(e.th||0)/(e.maxHp||1)));ctx.fillStyle='rgba(0,0,0,.65)';ctx.fillRect(sx-9,sy-22,18,4);ctx.fillStyle='#4cd964';ctx.fillRect(sx-8,sy-21,Math.round(16*f2),2);}
+  }else if(e.tame){
+    ctx.globalAlpha=1;try{txt('♥',sx,sy-((MOBS[e.type]||{}).h||20)-4,'#ff6b9a',7);}catch(_){}
   }else{
     for(let i=0;i<6;i++){
       const u=(T_*0.9+i*0.17)%1,px=sx+Math.sin(i*2.3+T_*1.7)*8,py=sy-3-u*24;
@@ -5169,17 +5285,299 @@ addEventListener('keydown',e=>{
   if(ok){e.preventDefault();e.stopImmediatePropagation();}
 },true);
 (function(){
+  const st=document.createElement('style');
+  st.textContent='#nzmenu{display:none;position:fixed;right:10px;bottom:88px;z-index:40;flex-direction:column;align-items:flex-end;gap:5px;pointer-events:none}'
+   +'#nzmenu button{pointer-events:auto;font:bold 12px system-ui,sans-serif;padding:6px 10px;border-radius:8px;border:2px solid;background:rgba(15,10,30,.72);color:#fff;touch-action:manipulation;-webkit-tap-highlight-color:transparent;white-space:nowrap;line-height:1.2}'
+   +'#nzmenu button:active{background:rgba(120,60,200,.85)}'
+   +'#nzmenu .nzk{opacity:.7}'
+   +'@media (pointer:coarse){#nzmenu .nzk{display:none}'
+   +'#nzmenu{right:max(10px,env(safe-area-inset-right));bottom:200px;gap:4px}'
+   +'#nzmenu button{font-size:11px;padding:5px 8px;background:rgba(15,10,30,.6)}}'
+   +'@media (pointer:coarse) and (orientation:portrait){#nzmenu{bottom:215px}}'
+   +'@media (pointer:coarse) and (orientation:landscape) and (max-height:520px){#nzmenu{bottom:128px;right:calc(max(10px,env(safe-area-inset-right)) + 0px)}}';
+  document.head.appendChild(st);
   const el=document.createElement('div');el.id='nzmenu';
-  el.style.cssText='display:none;position:fixed;left:50%;bottom:34%;transform:translateX(-50%);z-index:40;gap:8px;flex-wrap:wrap;justify-content:center';
-  const mk=(id,txt,fn,col)=>{const b=document.createElement('button');b.id=id;b.type='button';b.textContent=txt;
-    b.style.cssText='font:bold 13px system-ui,sans-serif;padding:9px 13px;border-radius:8px;border:2px solid '+col+';background:rgba(15,10,30,.88);color:#fff;touch-action:manipulation';
-    const h=ev=>{ev.preventDefault();ev.stopPropagation();fn();};b.addEventListener('click',h);b.addEventListener('touchstart',ev=>ev.stopPropagation(),{passive:true});el.appendChild(b);};
-  mk('nzLoot','🎒 Ambil Loot [E]',nzClaimLoot,'#ffd23f');
-  mk('nzRev','💀 Bangkitkan [R]',nzRevive,'#a855f7');
+  const mk=(id,html,fn,col)=>{const b=document.createElement('button');b.id=id;b.type='button';b.innerHTML=html;
+    b.style.borderColor=col;
+    /* pointerdown = langsung bereaksi saat disentuh; click diblokir agar tidak terpanggil dua kali */
+    b.addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();fn();});
+    b.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();});
+    b.addEventListener('touchstart',ev=>ev.stopPropagation(),{passive:true});
+    el.appendChild(b);};
+  mk('nzLoot','🎒 Ambil Loot <span class="nzk">[E]</span>',nzClaimLoot,'#ffd23f');
+  mk('nzRev','💀 Bangkitkan <span class="nzk">[R]</span>',nzRevive,'#a855f7');
   document.body.appendChild(el);
+  /* ---- panel Kantong ---- */
+  const st2=document.createElement('style');
+  st2.textContent='#nzPkBtn{display:none;position:fixed;right:10px;top:150px;z-index:41;font:bold 12px system-ui,sans-serif;padding:6px 10px;border-radius:8px;border:2px solid #c07bff;background:rgba(15,10,30,.75);color:#fff;touch-action:manipulation}'
+   +'#nzPk{display:none;position:fixed;inset:0;z-index:59;background:rgba(5,8,18,.55);align-items:center;justify-content:center}#nzPk.on{display:flex}'
+   +'#nzPk .pb{width:min(460px,96vw);max-height:90vh;overflow:auto;background:rgba(12,10,30,.97);border:3px solid #c07bff;box-shadow:0 0 0 3px #000;padding:10px 12px;font:13px system-ui,sans-serif;color:#fff;-webkit-overflow-scrolling:touch}'
+   +'#nzPk h3{margin:0 0 6px;font-size:15px;display:flex;justify-content:space-between;align-items:center}'
+   +'#nzPk h4{margin:10px 0 4px;font-size:12px;color:#c9b8ff}'
+   +'#nzPk .pr{display:flex;align-items:center;gap:6px;padding:4px 6px;margin:3px 0;background:rgba(255,255,255,.06);border-radius:6px}'
+   +'#nzPk .pn{flex:1;min-width:0}#nzPk .pn small{display:block;opacity:.75;font-size:10px}'
+   +'#nzPk .hb{height:4px;background:#000;border-radius:2px;margin-top:2px}#nzPk .hb i{display:block;height:100%;background:#4cd964;border-radius:2px}'
+   +'#nzPk button{font:bold 11px system-ui,sans-serif;padding:5px 9px;border-radius:6px;border:2px solid #c07bff;background:rgba(40,20,80,.9);color:#fff;touch-action:manipulation;cursor:pointer}'
+   +'#nzPk .ra button{border-color:#7dffb0}#nzPk .top{display:flex;gap:6px;margin:6px 0}'
+   +'#nzPk .em{opacity:.6;padding:6px;font-size:12px}';
+  document.head.appendChild(st2);
+  const bt=document.createElement('button');bt.id='nzPkBtn';bt.type='button';bt.innerHTML='🎒 Kantong <span class="nzk">[B]</span>';
+  bt.addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();nzPkToggle();});
+  bt.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();});
+  document.body.appendChild(bt);
+  const pn=document.createElement('div');pn.id='nzPk';pn.innerHTML='<div class="pb"></div>';document.body.appendChild(pn);
+  ['pointerdown','mousedown','touchstart','click','wheel'].forEach(t=>pn.addEventListener(t,ev=>ev.stopPropagation(),{passive:true}));
+  pn.addEventListener('click',ev=>{if(ev.target===pn)nzPkToggle(false);});
+  const nm=e=>(MOBS[e.type]?MOBS[e.type].name:e.type)+(e.bs?' 👑':'');
+  const row=(e,btn,idx)=>'<div class="pr"><div class="pn">'+(e.tame?'🐾 ':'💀 ')+nm(e)+' <small>Lv'+(e.lvl||1)+' · HP '+Math.round(e.hp)+'/'+e.maxHp+' · DMG '+Math.round(e.dmg)+'</small><div class="hb"><i style="width:'+Math.max(0,Math.min(100,e.hp/e.maxHp*100))+'%"></i></div></div><button data-a="'+btn+'" data-i="'+idx+'">'+(btn==='s'?'📤 Summon':'😴 Istirahatkan')+'</button></div>';
+  window.nzPkUi=function(){
+    if(!P||!nzR()){pn.classList.remove('on');bt.style.display='none';return;}
+    bt.style.display=(typeof started!=='undefined'&&started)?'block':'none';
+    if(!pn.classList.contains('on'))return;
+    const pk=nzPk(),al=NZ.allies,b=pn.firstChild;
+    let h='<h3>🎒 Kantong '+(P.role==='tamer'?'Hewan':'Pasukan')+' <button data-a="x">✖</button></h3>'
+     +'<div class="top"><button data-a="sa">📤 Summon Semua</button><button data-a="ra">😴 Istirahatkan Semua</button></div>'
+     +'<h4>Di Kantong ('+pk.length+'/'+nzPkCap()+')</h4>';
+    h+=pk.length?pk.map((e,i)=>row(e,'s',i)).join(''):'<div class="em">Kantong kosong. Bangkitkan/jinakkan mob untuk mengisinya.</div>';
+    h+='<h4>Aktif di sisimu ('+al.length+'/'+nzSlots(P.lvl)+')</h4><div class="ra">';
+    h+=al.length?al.map((a,i)=>row({type:a.type,lvl:a.lvl,hp:a.hp,maxHp:a.maxHp,dmg:a.dmg,bs:a.bs,tame:a.tame},'r',i)).join(''):'<div class="em">Tidak ada yang dipanggil.</div>';
+    h+='</div>';
+    if(b._h!==h){b._h=h;b.innerHTML=h;}
+  };
+  pn.addEventListener('click',ev=>{
+    const t=ev.target.closest&&ev.target.closest('button');if(!t)return;
+    const a=t.dataset.a,i=+t.dataset.i;
+    if(a==='x')nzPkToggle(false);else if(a==='s')nzSummon(i);else if(a==='r')nzRest(NZ.allies[i]);else if(a==='sa')nzSummonAll();else if(a==='ra')nzRestAll();
+    nzPkUi();
+  });
+  window.nzPkToggle=function(v){
+    if(!P||!nzR())return;
+    const on=v===undefined?!pn.classList.contains('on'):!!v;
+    pn.classList.toggle('on',on);nzPkUi();
+  };
+  setInterval(()=>{try{nzPkUi();}catch(_){}},500);
+  addEventListener('keydown',e=>{
+    const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'))return;
+    const k=(e.key||'').toLowerCase();
+    if(k==='escape'&&pn.classList.contains('on')){nzPkToggle(false);return;}
+    if(k==='b'&&!e.repeat&&!dlg&&P&&nzR()&&!dying){e.preventDefault();nzPkToggle();}
+  },true);
 })();
 /* ================= /NECROMANCER ================= */
+/* ================= ADMIN: PANEL & MODE KREATIF ================= */
+/* Hanya aktif untuk akun di ADMIN_EMAILS. Buka dengan tombol 🛠️ Admin atau tekan F9. */
+const ADM={god:false,fly:false,inf:false,nocd:false,items:false,fz:false,spd:1,dmg:1,fzT:0,_t:0,_tag:''};
+const ADM_KEY='pxadm_cfg_v1';
+(function(){try{const s=JSON.parse(localStorage.getItem(ADM_KEY)||'null');if(s){['god','fly','inf','nocd','items'].forEach(k=>ADM[k]=!!s[k]);ADM.spd=Math.min(10,Math.max(1,+s.spd||1));ADM.dmg=Math.max(1,+s.dmg||1);}}catch(e){}})();
+const admOn=()=>{try{return isAdmin();}catch(e){return false;}};
+const admGod=()=>admOn()&&ADM.god;
+const admFly=()=>admOn()&&ADM.fly&&IN===null&&!DG;
+const admSpd=()=>admOn()?ADM.spd:1;
+const admDmg=(d,o)=>(admOn()&&ADM.dmg>1&&!(o&&o.by==='ally'))?d*ADM.dmg:d;
+function admSave(){try{localStorage.setItem(ADM_KEY,JSON.stringify({god:ADM.god,fly:ADM.fly,inf:ADM.inf,nocd:ADM.nocd,items:ADM.items,spd:ADM.spd,dmg:ADM.dmg}));}catch(e){}}
+function admTick(dt){
+  if(!admOn()||!P||!P.role)return;
+  if(ADM.fz)gtime=ADM.fzT;
+  if(ADM.god){if(dying)dying=false;if(P.hp<P.maxHp)P.hp=P.maxHp;P.food=100;}
+  if(ADM.inf){P.mp=P.maxMp;P.stam=P.maxSt;P.exh=false;P.food=100;}
+  if(ADM.nocd){for(let i=0;i<cds.length;i++)cds[i]=0;P.atk=0;}
+  if(ADM.items){ADM._t-=dt;if(ADM._t<=0){ADM._t=0.5;try{for(const it of invItems()){if(it.cat==='gear'||it.cat==='tool')continue;if(it.n<999)itemSet(it.cat,it.id,999);}}catch(e){}}}
+  const parts=[];if(ADM.god)parts.push('Kebal');if(ADM.fly)parts.push('Tembus');if(ADM.inf)parts.push('MP∞');if(ADM.nocd)parts.push('No-CD');if(ADM.items)parts.push('Item∞');if(ADM.fz)parts.push('Waktu⏸');if(ADM.spd>1)parts.push('Cepat x'+ADM.spd);if(ADM.dmg>1)parts.push(ADM.dmg>=1e6?'1-Hit':'Dmg x'+ADM.dmg);
+  const tg=parts.length?'🛠️ '+parts.join(' · '):'';
+  if(tg!==ADM._tag){ADM._tag=tg;let el=document.getElementById('admTag');if(!el){el=document.createElement('div');el.id='admTag';el.style.cssText='position:fixed;top:3px;left:50%;transform:translateX(-50%);z-index:30;pointer-events:none;font:bold 10px system-ui,sans-serif;color:#ffd23f;background:rgba(10,14,28,.7);border:1px solid #ffd23f;border-radius:6px;padding:1px 7px;white-space:nowrap;max-width:60vw;overflow:hidden;text-overflow:ellipsis';document.body.appendChild(el);}el.textContent=tg;el.style.display=tg?'':'none';}
+}
+(function(){
+  const st=document.createElement('style');
+  st.textContent='#adm{display:none;position:fixed;inset:0;z-index:58;background:rgba(5,8,18,.55);align-items:center;justify-content:center;touch-action:auto}#adm.on{display:flex}'
+  +'#adm .adm-b{width:min(620px,96vw);max-height:92vh;overflow:auto;background:rgba(12,16,34,.97);border:3px solid #ffd23f;box-shadow:0 0 0 3px #000;padding:10px 12px;font:13px system-ui,sans-serif;color:#fff;-webkit-overflow-scrolling:touch}'
+  +'#adm h3{margin:0 0 6px;font-size:15px;color:#ffd23f;display:flex;justify-content:space-between;align-items:center}'
+  +'#adm .adm-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}'
+  +'#adm .adm-tabs button{flex:1;min-width:70px}'
+  +'#adm button,#adm select,#adm input{font:inherit;color:#fff;background:#1a2036;border:2px solid #556;border-radius:6px;padding:5px 8px;touch-action:manipulation}'
+  +'#adm button{cursor:pointer;font-weight:bold}#adm button:active{background:#33406b}'
+  +'#adm button.on{border-color:#ffd23f;color:#ffd23f}#adm button.go{border-color:#7dffb0;color:#7dffb0}#adm button.bad{border-color:#ff6b6b;color:#ff9a9a}'
+  +'#adm .adm-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;margin:6px 0}'
+  +'#adm label{display:flex;flex-direction:column;gap:2px;font-size:11px;color:#9ad}#adm label input,#adm label select{width:100%;box-sizing:border-box}'
+  +'#adm .adm-r{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0;align-items:center}'
+  +'#adm .adm-c{display:flex;flex-direction:row;align-items:center;gap:8px;padding:4px 2px;font-size:13px;color:#fff}#adm .adm-c input{width:20px;height:20px;padding:0;accent-color:#ffd23f}'
+  +'#adm small{color:#9ad;display:block;margin:2px 0 4px;font-size:11px}#adm hr{border:0;border-top:1px solid #334;margin:8px 0}';
+  document.head.appendChild(st);
+})();
+let admBuilt=false,admTab='char';
+const ADM_CATS=[['loot','Loot'],['food','Makanan'],['prod','Hasil Panen'],['seed','Bibit'],['furn','Furnitur'],['gear','Perlengkapan'],['tool','Alat']];
+function admItemIds(cat){
+  if(cat==='loot')return Object.keys(LOOT);if(cat==='food')return Object.keys(FOODS);if(cat==='prod')return Object.keys(EDIBLE);
+  if(cat==='seed')return CK.slice();if(cat==='furn')return FURN.map(f=>f.id);if(cat==='gear')return Object.keys(GEAR);if(cat==='tool')return Object.keys(TOOL_META);return [];
+}
+function admGive(cat,id,n){
+  if(cat==='tool'){P.bag.tool[id]=true;return;}
+  itemSet(cat,id,itemGet(cat,id)+n);
+}
+const $a=id=>document.getElementById(id);
+const admN=(id,d)=>{const v=Math.floor(+$a(id).value);return isFinite(v)?v:d;};
+function admBuild(){
+  if(admBuilt)return;admBuilt=true;
+  const el=document.createElement('div');el.id='adm';
+  const roleOpts=ROLE_IDS.map(r=>'<option value="'+r+'">'+ROLES[r].ic+' '+ROLES[r].n+'</option>').join('');
+  const mobIds=Object.keys(MOBS).filter(k=>!MOBS[k].immortal);
+  const mobOpts=mobIds.map(k=>'<option value="'+k+'">'+(MOBS[k].boss?'👑 ':'')+MOBS[k].name+'</option>').join('');
+  const settOpts=SETT.map((s,i)=>'<option value="'+i+'">'+s.name+'</option>').join('');
+  const catOpts=ADM_CATS.map(c=>'<option value="'+c[0]+'">'+c[1]+'</option>').join('');
+  const chk=(id,t)=>'<label class="adm-c"><input type="checkbox" id="'+id+'"> '+t+'</label>';
+  el.innerHTML='<div class="adm-b"><h3><span>🛠️ Panel Admin</span><button id="admX" type="button">✕</button></h3>'
+  +'<div class="adm-tabs"><button type="button" data-t="char">👤 Karakter</button><button type="button" data-t="cre">✨ Kreatif</button><button type="button" data-t="item">🎒 Item</button><button type="button" data-t="world">🌍 Mob & Dunia</button></div>'
+  /* --- KARAKTER --- */
+  +'<div class="adm-s" data-s="char"><div id="admInfo"></div>'
+  +'<div class="adm-g"><label>Level<input id="aLv" type="number" min="1"></label><label>Poin Stat (sisa)<input id="aPts" type="number" min="0"></label>'
+  +'<label>STR (serangan)<input id="aStr" type="number" min="0"></label><label>SPD (kecepatan)<input id="aSpd" type="number" min="0"></label>'
+  +'<label>DEF (pertahanan)<input id="aDef" type="number" min="0"></label><label>STA (stamina)<input id="aSta" type="number" min="0"></label>'
+  +'<label>Koin<input id="aCoin" type="number" min="0"></label><label>Bonus Max HP<input id="aBhp" type="number" min="0"></label><label>Bonus Max MP<input id="aBmp" type="number" min="0"></label></div>'
+  +'<div class="adm-r"><button type="button" class="go" id="aApply">✅ Terapkan</button><button type="button" id="aMax">⚡ Level Maks</button><button type="button" id="aRst">↺ Reset Stat</button><button type="button" id="aRead">🔄 Muat Ulang Nilai</button></div>'
+  +'<hr><div class="adm-r"><label style="flex:1">Tambah XP<input id="aXp" type="number" min="0" value="1000"></label><button type="button" id="aXpGo">+ XP</button></div>'
+  +'<div class="adm-r"><label style="flex:1">Ganti Peran (level & stat dipertahankan)<select id="aRole">'+roleOpts+'</select></label><button type="button" id="aRoleGo">Ganti</button></div>'
+  +'<div class="adm-r"><button type="button" class="go" id="aHeal">💚 Pulihkan HP/MP/Stamina/Lapar</button></div></div>'
+  /* --- KREATIF --- */
+  +'<div class="adm-s" data-s="cre" style="display:none"><div class="adm-r"><button type="button" class="go" id="cOn">✨ Aktifkan Mode Kreatif</button><button type="button" class="bad" id="cOff">Matikan Semua</button></div>'
+  +'<small>Mode Kreatif = kebal + tembus rintangan + MP/stamina/lapar tak terbatas + tanpa cooldown + stok item tak habis + kecepatan x2.</small>'
+  +chk('cGod','🛡️ Kebal (tidak bisa terluka / mati)')+chk('cFly','🕊️ Tembus rintangan (terbang bebas, hanya di dunia terbuka)')
+  +chk('cInf','💧 MP, Stamina & Lapar tak terbatas')+chk('cNocd','⏱️ Tanpa cooldown sihir & serangan')+chk('cItems','♾️ Stok item tak habis (otomatis isi ke 999)')+chk('cFz','⏸️ Bekukan waktu (siang/malam & musim)')
+  +'<div class="adm-g"><label>Kecepatan jalan<select id="cSpd"><option value="1">x1</option><option value="1.5">x1.5</option><option value="2">x2</option><option value="3">x3</option><option value="5">x5</option><option value="8">x8</option></select></label>'
+  +'<label>Kekuatan serangan<select id="cDmg"><option value="1">x1 (normal)</option><option value="3">x3</option><option value="10">x10</option><option value="100">x100</option><option value="10000000">Sekali pukul</option></select></label></div>'
+  +'<hr><div class="adm-r"><button type="button" id="tDay">☀️ Siang</button><button type="button" id="tNight">🌙 Malam</button><button type="button" id="tSeason">🍂 Musim berikut</button></div>'
+  +'<div class="adm-r"><button type="button" id="cGrow">🌱 Tanaman & hewan siap panen</button><button type="button" id="cW2">🔥 Buka Dunia 2</button><button type="button" id="cSp">📖 Buka semua sihir</button></div></div>'
+  /* --- ITEM --- */
+  +'<div class="adm-s" data-s="item" style="display:none"><div class="adm-g"><label>Kategori<select id="iCat">'+catOpts+'</select></label><label>Item<select id="iId"></select></label><label>Jumlah<input id="iN" type="number" min="1" value="99"></label></div>'
+  +'<div class="adm-r"><button type="button" class="go" id="iGive">➕ Beri item</button><button type="button" id="iAll">📦 Beri SEMUA item kategori ini</button><button type="button" class="bad" id="iDel">🗑️ Hapus item ini</button></div>'
+  +'<hr><div class="adm-r"><label style="flex:1">Koin ditambah<input id="iCoin" type="number" min="0" value="100000"></label><button type="button" id="iCoinGo">+ Koin</button></div>'
+  +'<small>Item diberikan langsung ke inventori tanpa batas slot.</small></div>'
+  /* --- MOB & DUNIA --- */
+  +'<div class="adm-s" data-s="world" style="display:none"><div class="adm-g"><label>Monster<select id="mType">'+mobOpts+'</select></label><label>Level<input id="mLv" type="number" min="1" value="1"></label><label>Jumlah<input id="mN" type="number" min="1" max="30" value="1"></label><label>Tier (slime 0-3)<input id="mTier" type="number" min="0" max="3" value="0"></label></div>'
+  +'<div class="adm-r"><button type="button" class="go" id="mSpawn">👾 Spawn di dekatku</button><button type="button" id="mKill">⚔️ Bunuh semua (dapat XP/loot)</button><button type="button" class="bad" id="mClr">🧹 Hapus semua</button></div>'
+  +'<hr><div id="wPos"></div><div class="adm-r"><label style="flex:1">Teleport ke desa<select id="wSett">'+settOpts+'</select></label><button type="button" id="wSettGo">Teleport</button></div>'
+  +'<div class="adm-g"><label>Petak X<input id="wX" type="number" value="0"></label><label>Petak Y<input id="wY" type="number" value="0"></label></div>'
+  +'<div class="adm-r"><button type="button" id="wGo">📍 Ke koordinat</button><button type="button" id="wHome">🏠 Spawn awal</button></div>'
+  +'<div class="adm-r"><button type="button" id="wD1">🌍 Dunia 1</button><button type="button" id="wD2">🔥 Dunia 2</button></div>'
+  +'<small>Teleport hanya di dunia terbuka (bukan di dalam rumah/dungeon). Lompat lantai dungeon: tekan L di dalam dungeon.</small></div></div>';
+  document.body.appendChild(el);
+  el.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Escape'||e.key==='F9'){e.preventDefault();admClose();}});
+  el.addEventListener('keyup',e=>e.stopPropagation());
+  el.addEventListener('pointerdown',e=>e.stopPropagation());
+  el.addEventListener('mousedown',e=>e.stopPropagation());
+  el.addEventListener('touchstart',e=>e.stopPropagation(),{passive:true});
+  el.addEventListener('click',e=>{if(e.target===el)admClose();});
+  const on=(id,fn)=>$a(id).addEventListener('click',()=>{try{fn();}catch(err){toast('Admin: '+err.message);}});
+  el.querySelectorAll('.adm-tabs button').forEach(b=>b.addEventListener('click',()=>admShow(b.dataset.t)));
+  on('admX',admClose);
+  /* karakter */
+  on('aApply',()=>{
+    const R=RL();P.lvl=Math.min(R.maxLvl,Math.max(1,admN('aLv',P.lvl)));P.xp=0;
+    P.stats={str:Math.max(0,admN('aStr',0)),spd:Math.max(0,admN('aSpd',0)),def:Math.max(0,admN('aDef',0)),sta:Math.max(0,admN('aSta',0))};
+    P.pts=Math.max(0,admN('aPts',0));P.coins=Math.max(0,admN('aCoin',0));P.bhp=Math.max(0,admN('aBhp',0));P.bmp=Math.max(0,admN('aBmp',0));
+    recalc();P.hp=P.maxHp;P.mp=P.maxMp;P.stam=P.maxSt;P.exh=false;
+    try{levelFx();}catch(e){}saveGame();admFill();toast('✅ Karakter diperbarui: Lv '+P.lvl+' · HP '+P.maxHp+' · MP '+P.maxMp);
+  });
+  on('aMax',()=>{const mx=RL().maxLvl;P.lvl=mx;P.xp=0;P.pts=Math.max(0,5+(mx-1)-statSum());recalc();P.hp=P.maxHp;P.mp=P.maxMp;P.stam=P.maxSt;try{levelFx();}catch(e){}saveGame();admFill();toast('⚡ Level maks: '+mx);});
+  on('aRst',()=>{P.pts=(P.pts||0)+statSum();P.stats={str:0,spd:0,def:0,sta:0};recalc();admFill();saveGame();toast('↺ Stat direset, poin dikembalikan');});
+  on('aRead',()=>{admFill();toast('Nilai dimuat ulang');});
+  on('aXpGo',()=>{const n=Math.max(0,admN('aXp',0));if(n>0)gainXp(n);admFill();toast('+'+n+' XP');});
+  on('aRoleGo',()=>{
+    const id=$a('aRole').value;if(!ROLES[id]||id===P.role){toast('Pilih peran yang berbeda');return;}
+    P.role=id;P.buf={};P.absorb=0;P.eq=null;P.shield=false;
+    if(id==='warga')P.bag.tool.cangkul=true;
+    if(id==='pemanah'){P.weapon='bow';P.hasBow=true;}else{P.weapon='sword';P.hasBow=false;}
+    recalc();P.hp=P.maxHp;P.mp=P.maxMp;
+    try{setupRoleUI();}catch(e){}try{buildHotbar();}catch(e){}saveGame();admFill();toast('🎭 Peran sekarang: '+ROLES[id].n);
+  });
+  on('aHeal',()=>{P.hp=P.maxHp;P.mp=P.maxMp;P.stam=P.maxSt;P.exh=false;P.food=100;if(dying)dying=false;toast('💚 Pulih penuh');});
+  /* kreatif */
+  const bind=(id,key)=>$a(id).addEventListener('change',()=>{
+    ADM[key]=$a(id).checked;
+    if(key==='fz'&&ADM.fz)ADM.fzT=gtime;
+    admSave();
+  });
+  bind('cGod','god');bind('cFly','fly');bind('cInf','inf');bind('cNocd','nocd');bind('cItems','items');bind('cFz','fz');
+  $a('cSpd').addEventListener('change',()=>{ADM.spd=+$a('cSpd').value||1;admSave();});
+  $a('cDmg').addEventListener('change',()=>{ADM.dmg=+$a('cDmg').value||1;admSave();});
+  on('cOn',()=>{ADM.god=ADM.fly=ADM.inf=ADM.nocd=ADM.items=true;ADM.spd=Math.max(ADM.spd,2);admSave();admFill();toast('✨ Mode Kreatif AKTIF');});
+  on('cOff',()=>{ADM.god=ADM.fly=ADM.inf=ADM.nocd=ADM.items=ADM.fz=false;ADM.spd=1;ADM.dmg=1;admSave();admFill();toast('Mode Kreatif dimatikan');});
+  on('tDay',()=>{const b=Math.floor(gtime/600)*600;gtime=b;if(ADM.fz)ADM.fzT=gtime;toast('☀️ Siang hari');});
+  on('tNight',()=>{const b=Math.floor(gtime/600)*600;gtime=b+150;if(ADM.fz)ADM.fzT=gtime;toast('🌙 Malam hari');});
+  on('tSeason',()=>{gtime=(Math.floor(gtime/600)+1)*600+(gtime%300);if(ADM.fz)ADM.fzT=gtime;toast('🍂 Musim berganti');});
+  on('cGrow',()=>{
+    for(const k in P.crops){P.crops[k].g=1e6;P.crops[k].w=true;}
+    for(const a of P.animals){const d=ANIM[a.type];if(d){a.ready=true;a.prog=d.cyc;}}
+    toast('🌱 Semua tanaman & hewan siap panen');
+  });
+  on('cW2',()=>{P.w2=true;saveGame();toast('🔥 Dunia 2 terbuka (tombol Dunia / N)');});
+  on('cSp',()=>{if(P.role==='necromancer'){const a=Array(12).fill(false);NZ_SP.forEach(i=>a[i]=true);P.sp=a;}else P.sp=Array(12).fill(true);try{fixEq(true);}catch(e){}toast('📖 Semua sihir dibuka (tekan K untuk memasang)');});
+  /* item */
+  const fillIds=()=>{const cat=$a('iCat').value;$a('iId').innerHTML=admItemIds(cat).map(id=>{const m=itemMeta(cat,id);return '<option value="'+id+'">'+(m?m.ic+' '+m.name:id)+'</option>';}).join('');};
+  $a('iCat').addEventListener('change',fillIds);fillIds();
+  on('iGive',()=>{const cat=$a('iCat').value,id=$a('iId').value,n=Math.max(1,admN('iN',1));if(!id){return;}admGive(cat,id,n);try{if(cat==='gear')fixGear();}catch(e){}toast('➕ '+(itemMeta(cat,id)||{name:id}).name+(cat==='tool'?'':' x'+n));});
+  on('iAll',()=>{const cat=$a('iCat').value,n=Math.max(1,admN('iN',1));const ids=admItemIds(cat);ids.forEach(id=>admGive(cat,id,n));try{if(cat==='gear')fixGear();}catch(e){}toast('📦 '+ids.length+' item diberikan');});
+  on('iDel',()=>{const cat=$a('iCat').value,id=$a('iId').value;if(!id)return;if(cat==='tool')P.bag.tool[id]=false;else itemSet(cat,id,0);toast('🗑️ Item dihapus');});
+  on('iCoinGo',()=>{const n=Math.max(0,admN('iCoin',0));P.coins+=n;toast('+'+n+' koin');});
+  /* mob & dunia */
+  on('mSpawn',()=>{
+    const type=$a('mType').value,d=MOBS[type];if(!d)return;
+    const n=Math.min(30,Math.max(1,admN('mN',1))),lv=Math.max(1,admN('mLv',1)),tier=Math.min(3,Math.max(0,admN('mTier',0)));
+    let ok=0;
+    for(let i=0;i<n;i++){
+      for(let t=0;t<12;t++){
+        const a=Math.random()*6.283,r=28+Math.random()*34,x=P.x+Math.cos(a)*r,y=P.y+Math.sin(a)*r;
+        if(!d.fly&&blocked(x,y))continue;
+        const m=makeMob(type,x,y,type==='slime'?tier:0,null,0,0,lv,!DG);mobs.push(m);ok++;break;
+      }
+    }
+    toast(ok?'👾 '+ok+' '+d.name+' (Lv '+lv+') muncul':'Tidak ada tempat kosong di dekatmu');
+  });
+  on('mKill',()=>{let n=0;for(const m of mobs.slice()){if(m.dead||m.pvp||m.net)continue;try{killMob(m,'admin');n++;}catch(e){}}toast('⚔️ '+n+' musuh dibunuh');});
+  on('mClr',()=>{let n=0;for(const m of mobs){if(m.dead||m.pvp||m.net)continue;m.dead=true;n++;}toast('🧹 '+n+' musuh dihapus');});
+  const canTp=()=>{if(IN!==null||DG||AR){toast('Keluar dulu dari rumah/dungeon');return false;}return true;};
+  on('wSettGo',()=>{if(!canTp())return;const s=SETT[+$a('wSett').value];if(!s)return;P.x=s.x*T+8;P.y=s.y*T+12;toast('📍 '+s.name);});
+  on('wGo',()=>{if(!canTp())return;P.x=admN('wX',0)*T+8;P.y=admN('wY',0)*T+12;toast('📍 Teleport ke ('+admN('wX',0)+', '+admN('wY',0)+')');});
+  on('wHome',()=>{if(!canTp())return;P.x=8;P.y=44;toast('🏠 Spawn awal');});
+  on('wD1',()=>{admClose();if(WORLD!==1)switchWorld(1);else toast('Sudah di Dunia 1');});
+  on('wD2',()=>{if(!P.w2)P.w2=true;admClose();if(WORLD!==2)switchWorld(2);else toast('Sudah di Dunia 2');});
+}
+function admShow(t){
+  admTab=t;
+  document.querySelectorAll('#adm .adm-s').forEach(s=>s.style.display=s.dataset.s===t?'':'none');
+  document.querySelectorAll('#adm .adm-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+}
+function admFill(){
+  if(!admBuilt)return;
+  const R=RL();
+  $a('admInfo').innerHTML='<small>Peran: <b style="color:#fff">'+R.ic+' '+R.n+'</b> · Dunia '+WORLD+' · Level maks peran ini: <b style="color:#fff">'+R.maxLvl+'</b> · HP '+Math.round(P.hp)+'/'+P.maxHp+' · MP '+Math.round(P.mp)+'/'+P.maxMp+'</small>';
+  $a('aLv').value=P.lvl;$a('aLv').max=R.maxLvl;$a('aPts').value=P.pts|0;
+  $a('aStr').value=stv('str');$a('aSpd').value=stv('spd');$a('aDef').value=stv('def');$a('aSta').value=stv('sta');
+  $a('aCoin').value=Math.floor(P.coins||0);$a('aBhp').value=P.bhp|0;$a('aBmp').value=P.bmp|0;
+  $a('aRole').value=P.role||'warga';
+  $a('cGod').checked=ADM.god;$a('cFly').checked=ADM.fly;$a('cInf').checked=ADM.inf;$a('cNocd').checked=ADM.nocd;$a('cItems').checked=ADM.items;$a('cFz').checked=ADM.fz;
+  $a('cSpd').value=String(ADM.spd);
+  {const dv=String(ADM.dmg);const so=$a('cDmg');if(![...so.options].some(o=>o.value===dv)){const o=document.createElement('option');o.value=dv;o.textContent='x'+dv;so.appendChild(o);}so.value=dv;}
+  $a('mLv').value=Math.max(1,(IN===null&&!DG)?mobLevel(P.x,P.y):P.lvl);
+  $a('wPos').innerHTML='<small>Posisi sekarang: petak ('+Math.floor(P.x/T)+', '+Math.floor(P.y/T)+')</small>';
+}
+function admOpen(){
+  if(!admOn()||!P.role)return;
+  if(dlg||dying){toast('Tutup dialog dulu, lalu buka Panel Admin');return;}
+  admBuild();for(const k in keys)keys[k]=false;mouseL=mouseR=false;try{joyEnd();}catch(e){}
+  admFill();admShow(admTab);$a('adm').classList.add('on');
+}
+function admClose(){const e=$a('adm');if(e)e.classList.remove('on');}
+const admIsOpen=()=>{const e=document.getElementById('adm');return !!e&&e.classList.contains('on');};
+addEventListener('keydown',e=>{
+  if(e.key==='F9'&&admOn()){e.preventDefault();e.stopImmediatePropagation();if(admIsOpen())admClose();else admOpen();return;}
+  if(admIsOpen()){
+    if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();admClose();return;}
+    const t=e.target;if(!(t&&t.closest&&t.closest('#adm')))e.stopImmediatePropagation();   // tombol game tidak bocor saat panel terbuka
+  }
+},true);
+document.addEventListener('click',e=>{const b=e.target&&e.target.closest&&e.target.closest('#admBtn');if(b){e.preventDefault();if(admIsOpen())admClose();else admOpen();}});
+/* ================= /ADMIN ================= */
 function hurt(n,fromX,fromY){
+  if(admGod())return;
   n=Math.max(1,Math.round(n*RL().def*defMul()));
   if(P.shield){n=Math.max(1,Math.round(n*Math.max(0.05,0.15-gearStat().blk/100)));floatText(P.x,P.y-32,'Tangkis!','#6ab8ff');sfx('block');crossFx(P.x,P.y-9,'#6ab8ff',9,0.2);}
   const B=P.buf||{};
@@ -5590,7 +5988,7 @@ function drawFire(now){
 }
 
 function update(dt){
-  gtime+=dt;petTick(dt);
+  gtime+=dt;try{admTick(dt);}catch(e){}petTick(dt);
   if(AR){arUpdate(dt);return;}
   const SS=SEAS[seasonIdx()];if(SS!==lastSS){if(lastSS){toast(SS.msg);if(P.land.some(Boolean)&&!P.tax){P.tax=true;setTimeout(()=>toast('🏛️ Pajak lahan musim ini jatuh tempo! Bayar di Agen Properti.'),2600);}}lastSS=SS;}
   for(const k in P.crops){const c=P.crops[k];if(SS.rain)c.w=true;else if(SS.dry&&c.w&&Math.random()<dt*0.02)c.w=false;c.g+=dt*(c.w?2:1)*SS.cg;}
@@ -5626,11 +6024,12 @@ function update(dt){
     P.moving=ax!==0||ay!==0;
     if(P.moving){
       const l=Math.hypot(ax,ay);ax/=l;ay/=l;
-      const run=(keys.shift&&!P.shield&&!P.exh&&P.stam>0)?1.7:1,sp=58*(1+stv('spd')*0.006)*run*SS.ps*(P.shield?0.55:1)*((P.buf&&P.buf.haste>0)?1.4:1)*(P.food<=0?0.85:1)*(petOn('kuda')?1.3:1)*(jOn?0.55+0.45*joy.m:1);
+      const run=(keys.shift&&!P.shield&&!P.exh&&P.stam>0)?1.7:1,sp=58*admSpd()*(1+stv('spd')*0.006)*run*SS.ps*(P.shield?0.55:1)*((P.buf&&P.buf.haste>0)?1.4:1)*(P.food<=0?0.85:1)*(petOn('kuda')?1.3:1)*(jOn?0.55+0.45*joy.m:1);
       if(P.aimT<=0){if(Math.abs(ax)>Math.abs(ay))P.dir=ax>0?3:2;else P.dir=ay>0?0:1;}
       const nx=P.x+ax*sp*dt,ny=P.y+ay*sp*dt;
-      if(!blocked(nx,P.y)&&!npcBlock(nx,P.y))P.x=nx;
-      if(!blocked(P.x,ny)&&!npcBlock(P.x,ny))P.y=ny;
+      const fly_=admFly();
+      if(fly_||(!blocked(nx,P.y)&&!npcBlock(nx,P.y)))P.x=nx;
+      if(fly_||(!blocked(P.x,ny)&&!npcBlock(P.x,ny)))P.y=ny;
       P.anim+=dt*(run>1?11:7.5);
       if(run>1)useStam(14*dt);
     }
@@ -6376,6 +6775,11 @@ const SFX={
   sk_pancing:v=>{tn(196,.25,'sawtooth',.16*v,230);tn(196,.25,'sawtooth',.16*v,230,.3);tn(147,.4,'sawtooth',.12*v,120,.6);},
   sk_hantam:v=>{tn(900,.12,'square',.12*v,500);tn(1350,.1,'square',.08*v,700);tn(80,.3,'sine',.4*v,35);nz(.15,.3*v,'lowpass',1800,300);},
   sk_aura:v=>{arp([880,1175,1480,1760],.12,'sine',.12*v,.5);tn(440,.8,'triangle',.06*v,660);},
+  sk_panggil:v=>{tn(520,.15,'triangle',.25*v,380);tn(390,.25,'triangle',.25*v,300,.15);},
+  sk_amuk:v=>{nz(.3,.3*v,'lowpass',900,300);tn(140,.35,'sawtooth',.2*v,70);},
+  sk_cambuk:v=>{nz(.12,.3*v,'highpass',2500,1200);tn(900,.08,'square',.1*v,300);},
+  sk_lolong:v=>{tn(300,.7,'sine',.3*v,520);tn(520,.5,'sine',.2*v,260,.3);},
+  sk_rawat:v=>{tn(660,.15,'sine',.2*v,880);tn(880,.25,'sine',.2*v,1100,.12);},
   sk_kulit:v=>{nz(.35,.3*v,'lowpass',1100,200);tn(90,.4,'sine',.35*v,45);tn(300,.1,'square',.05*v,150,.05);},
   /* sihir penyihir */
   sp_angin:v=>nz(.35,.28*v,'bandpass',500,2500,0,1.2),
@@ -7924,6 +8328,7 @@ function mpPvIn(m){
   mpOut({t:'pr',to:m.u,n:lost,hp:Math.max(0,Math.round(P.hp)),mh:Math.round(P.maxHp),g:0});   // hasil nyata untuk penyerang
   if(dying){pvpDie=true;mpOut({t:'pk',to:m.u,n:P.name,g:0});}}
 function pvpHurt(n,fromX,fromY){
+  if(admGod())return;
   P.hp-=n;P.inv=0.45;
   sfx('hurt');shake(2.5,0.18);crossFx(P.x,P.y-9,'#ff6b6b',10,0.22);
   floatText(P.x,P.y-24,'-'+n,'#ff6b6b');
