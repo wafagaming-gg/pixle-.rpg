@@ -667,11 +667,11 @@ function addArena(s){
    RUMAH DESA — 5 tipe, dijual di tiap desa (bentuk & harga berbeda)
    ========================================================= */
 const EST_T=[
- {n:'Rumah Biasa',w:3,h:2,p:150000,ex:20,rh:12,wall:'#d9c7a0',roof:'#a86a3a',d:'Rumah mungil yang sederhana.'},
- {n:'Rumah Biasa-Sedang',w:4,h:2,p:2500000,ex:22,rh:14,wall:'#e2d2b0',roof:'#c0504d',d:'Ada beranda, kotak bunga & cerobong.'},
- {n:'Rumah Sedang',w:5,h:2,p:4000000,ex:28,rh:20,wall:'#e8dcc4',roof:'#3d6fb5',d:'Atap tinggi, jendela atap & dua cerobong.'},
- {n:'Rumah Sedang-Besar',w:6,h:3,p:7000000,ex:30,rh:22,wall:'#d8d4cc',roof:'#7a3aa8',d:'Dua lantai dengan balkon & sayap samping.'},
- {n:'Mansion',w:8,h:3,p:20000000,ex:38,rh:28,wall:'#f0ece0',roof:'#2a2f5a',d:'Mansion megah: pilar, menara & bendera.'}
+ {n:'Rumah Biasa',w:3,h:2,p:150000,ex:20,rh:12,iw:10,ir:5,fl:1,wall:'#d9c7a0',roof:'#a86a3a',d:'Rumah mungil yang sederhana. 1 lantai, ruangan kecil.'},
+ {n:'Rumah Biasa-Sedang',w:4,h:2,p:2500000,ex:22,rh:14,iw:13,ir:6,fl:1,wall:'#e2d2b0',roof:'#c0504d',d:'Ada beranda, kotak bunga & cerobong. 1 lantai, ruangan lebih lega.'},
+ {n:'Rumah Sedang',w:5,h:2,p:4000000,ex:28,rh:20,iw:16,ir:7,fl:2,wall:'#e8dcc4',roof:'#3d6fb5',d:'Atap tinggi, jendela atap & dua cerobong. 2 lantai, ruangan luas.'},
+ {n:'Rumah Sedang-Besar',w:6,h:3,p:7000000,ex:30,rh:22,iw:20,ir:8,fl:3,wall:'#d8d4cc',roof:'#7a3aa8',d:'Tiga lantai dengan balkon & sayap samping, ruangan sangat luas.'},
+ {n:'Mansion',w:8,h:3,p:20000000,ex:38,rh:28,iw:26,ir:10,fl:4,wall:'#f0ece0',roof:'#2a2f5a',d:'Mansion megah: pilar, menara & bendera. 4 lantai dengan aula raksasa.'}
 ];
 function makeEstate(b){
   const q=EST_T[b.tier],t=b.tier,W=b.w*T,Hw=b.h*T,H=Hw+q.ex,top=q.ex,[c,g]=mk(W,H),rf=b.roof,rd=shade(rf,.72),hw=W>>1;
@@ -735,8 +735,8 @@ function addEstates(s){
   }
 }
 const estOwn=i=>i>=100?!!(ESTATES[i-100]&&P.est&&P.est[ESTATES[i-100].id]):!!P.homes[i];
-const hk=()=>(IN>=100&&ESTATES[IN-100])?ESTATES[IN-100].id:IN;
-function estEnter(E){OX=P.x;OY=P.y;IN=E.in;P.x=80;P.y=104;P.dir=1;toast(estOwn(E.in)?'Rumahmu 🏠 (E taruh perabot, X ambil, Z ganti)':'Pratinjau '+E.nm+' (belum dibeli)');}
+const hk=()=>{const b=(IN>=100&&ESTATES[IN-100])?ESTATES[IN-100].id:IN;return IFL>0?b+'@'+IFL:b;};
+function estEnter(E){OX=P.x;OY=P.y;IN=E.in;IFL=0;STCD=0.6;const D=inDims();P.x=D.RW/2;P.y=D.RB-8;P.dir=1;toast((estOwn(E.in)?'Rumahmu 🏠 (E taruh perabot, X ambil, Z ganti)':'Pratinjau '+E.nm+' (belum dibeli)')+(D.fl>1?' · '+D.fl+' lantai: injak tangga ▲ di kiri-atas untuk naik':''));}
 function estDoor(E){
   if(estOwn(E.in)){estEnter(E);return;}
   openMenu('🏠 '+E.nm+' — '+E.vil,()=>[
@@ -2994,7 +2994,7 @@ const timers=[];
 const loaded=new Set();
 let dlg=null,dying=false,deathT=0,customImg=null,msgT=0;
 let shownIntro=false;
-let IN=null,OX=0,OY=0,menu=null,lastSS=null,SH=null;   // SH = ruangan toko/guild yang sedang dimasuki
+let IN=null,OX=0,OY=0,menu=null,lastSS=null,SH=null;let IFL=0,STCD=0;   // SH = ruangan toko/guild yang sedang dimasuki
 const CROPS={wortel:{n:'Wortel',seed:5,t:25,sell:12,col:'#ff8a1a'},jagung:{n:'Jagung',seed:10,t:45,sell:24,col:'#ffd23f'},labu:{n:'Labu',seed:20,t:80,sell:50,col:'#e07a1a'}};
 const CK=Object.keys(CROPS);
 const ANIM={ayam:{n:'Ayam',p:400,cyc:35,prod:'telur',sell:8},sapi:{n:'Sapi',p:1500,cyc:60,prod:'susu',sell:30}};
@@ -4094,7 +4094,7 @@ function shopTalk(k,f){
   return say(f.name,['Guild Petualang menerima hasil buruanmu.','Jual tanduk, kulit, daging, taring, dan barang langka lainnya di sini!','Tekan I untuk membuka inventori.','Pandai Besi bisa menempa perlengkapanmu jadi lebih kuat (+1 sampai +10) dan meracik ramuan dari hasil buruan!'],()=>shopGuildHub());
 }
 function enterShop(k,f){
-  OX=P.x;OY=P.y;IN=9;P.x=80;P.y=104;P.dir=1;
+  OX=P.x;OY=P.y;IN=9;IFL=0;P.x=80;P.y=104;P.dir=1;
   const n=makeNpc(f.name,k==='food'?SPR.cook:SPR.hunter,0,0,()=>shopTalk(k,f));
   n.x=80;n.y=50;n.still=1;n.dir=0;
   SH={k,f,npc:n};
@@ -4107,7 +4107,7 @@ function doorInteract(){
   for(const E of ESTATES){const bt=(E.y+E.h)*T,dx_=E.x*T+E.w*T/2;if(Math.abs(P.x-dx_)<14&&P.y>=bt-2&&P.y<bt+18){estDoor(E);return true;}}
   for(let i=0;i<4;i++){const h=HOUSES[i],bt=(h.y+h.h)*T;
     if(Math.abs(P.x-(h.x*T+24))<14&&P.y>=bt-2&&P.y<bt+18){
-      OX=P.x;OY=P.y;IN=i;P.x=80;P.y=104;P.dir=1;
+      OX=P.x;OY=P.y;IN=i;IFL=0;P.x=80;P.y=104;P.dir=1;
       toast(P.homes[i]?'Rumahmu 🏠 (E taruh perabot, X ambil, Z ganti)':'Rumah dijual: beli di Agen Properti');return true;}}
   return false;}
 function farmInteract(){
@@ -4187,9 +4187,17 @@ function ranchInteract(){
   if(P.bag.feed>0){P.bag.feed--;best.feed=d.cyc;gainXp(2,true);toast(d.n+' diberi pakan 🌾');return true;}
   toast('Pakan habis (Toko Bibit & Pakan)');return true;}
 const fAt=(i,tx,ty)=>(P.hf[i]||[]).find(f=>ty===f.y&&tx>=f.x&&tx<f.x+FD[f.id].w);
+function inDims(){
+  const E=(IN!==null&&IN>=100)?ESTATES[IN-100]:null,q=E?EST_T[E.tier]:null,iw=q?q.iw:10,ir=q?q.ir:5,fl=q?q.fl:1;
+  return {iw,ir,fl,RW:iw*T,RB:(2+ir)*T};}
+function goFloor(d){
+  const D=inDims();IFL=Math.max(0,Math.min(D.fl-1,IFL+d));STCD=0.7;
+  P.x=d>0?(D.iw-2)*T:2*T;P.y=3*T+12;P.dir=1;
+  toast('🏠 Lantai '+(IFL+1)+' dari '+D.fl);try{sfx('coin');}catch(e){}}
 function inSolid(px,py){
-  if(px<2||px>=158||py<36)return true;
-  if(py>=112)return !(px>=64&&px<96&&py<132);
+  const D=inDims();
+  if(px<2||px>=D.RW-2||py<36)return true;
+  if(py>=D.RB){const hx=D.RW/2;return IFL>0||!(px>=hx-16&&px<hx+16&&py<D.RB+20);}
   if(SH)return (px>=36&&px<124&&py>=46&&py<62)||(px>=8&&px<36&&py>=80&&py<96)||(px>=124&&px<152&&py>=80&&py<96);
   const f=fAt(hk(),Math.floor(px/T),Math.floor(py/T));return !!(f&&!FD[f.id].flat);}
 function inInteract(){
@@ -4207,7 +4215,8 @@ function inInteract(){
   if(!estOwn(IN)){toast('Rumah ini belum kamu beli');return;}
   const id=FURN[P.selF].id,w=FD[id].w;
   if(!(P.bag.furn[id]>0)){toast('Tidak punya '+FD[id].n+' (Z ganti, beli di Agen)');return;}
-  if(tx<0||tx+w>10||ty<2||ty>6){toast('Tidak muat di sini');return;}
+  {const D=inDims();if(tx<0||tx+w>D.iw||ty<2||ty>1+D.ir){toast('Tidak muat di sini');return;}
+  if(ty===2&&D.fl>1&&((IFL<D.fl-1&&tx<=2&&tx+w>1)||(IFL>0&&tx+w>D.iw-3&&tx<=D.iw-2))){toast('Itu area tangga');return;}}
   for(let i=0;i<w;i++)if(fAt(hk(),tx+i,ty)){toast('Terhalang');return;}
   const ptx=Math.floor(P.x/T),pty=Math.floor((P.y-1)/T);
   if(!FD[id].flat&&pty===ty&&ptx>=tx&&ptx<tx+w){toast('Kamu menghalangi');return;}
@@ -4612,19 +4621,30 @@ function renderShopIn(now){
   ctx.restore();}
 function renderIn(now){
   if(SH)return renderShopIn(now);
-  const ox=Math.round((VW-160)/2),oy=Math.round((VH-128)/2);
+  const D=inDims(),RW=D.RW,RB=D.RB,iw=D.iw,ir=D.ir,fl=D.fl,RH=RB+16;
+  const ox=RW<=VW?Math.round((VW-RW)/2):Math.round(clamp(VW/2-P.x,VW-RW,0)),
+        oy=RH<=VH?Math.round((VH-RH)/2):Math.round(clamp(VH/2-(P.y-10),VH-RH,0));
   camX=0;camY=0;ctx.save();ctx.translate(ox,oy);
-  for(let y=2;y<7;y++)for(let x=0;x<10;x++){ctx.fillStyle=(x+y)%2?'#b98a5a':'#c79a68';ctx.fillRect(x*T,y*T,T,T);ctx.fillStyle='#9a7248';ctx.fillRect(x*T,y*T+T-1,T,1);}
-  ctx.fillStyle='#e9d8b4';ctx.fillRect(0,0,160,32);ctx.fillStyle='#cdb98f';ctx.fillRect(0,26,160,6);ctx.fillStyle=HOUSES[IN]?HOUSES[IN].roofD:(ESTATES[IN-100]?shade(EST_T[ESTATES[IN-100].tier].roof,.72):'#68428f');ctx.fillRect(0,0,160,4);
-  [24,120].forEach(x=>{ctx.fillStyle='#6a4a2a';ctx.fillRect(x-1,7,18,14);ctx.fillStyle='#9fd8ff';ctx.fillRect(x,8,16,12);ctx.fillStyle='#6a4a2a';ctx.fillRect(x+7,8,2,12);});
-  ctx.fillStyle='#6a4a2a';ctx.fillRect(0,32,2,80);ctx.fillRect(158,32,2,80);ctx.fillRect(0,112,64,4);ctx.fillRect(96,112,64,4);
-  ctx.fillStyle='#7a5230';ctx.fillRect(64,112,32,12);
-  const fl=P.hf[hk()]||[];
-  fl.filter(f=>FD[f.id].flat).forEach(drawF);
-  const L=fl.filter(f=>!FD[f.id].flat).map(f=>({y:(f.y+1)*T,f}));L.push({y:P.y,p:1});
+  const FP=[['#b98a5a','#c79a68'],['#a8946a','#b6a278'],['#9a8a7a','#a89886'],['#8a7a9a','#9888a8']][IFL%4];
+  for(let y=2;y<2+ir;y++)for(let x=0;x<iw;x++){ctx.fillStyle=(x+y)%2?FP[0]:FP[1];ctx.fillRect(x*T,y*T,T,T);ctx.fillStyle='#9a7248';ctx.fillRect(x*T,y*T+T-1,T,1);}
+  ctx.fillStyle='#e9d8b4';ctx.fillRect(0,0,RW,32);ctx.fillStyle='#cdb98f';ctx.fillRect(0,26,RW,6);ctx.fillStyle=HOUSES[IN]?HOUSES[IN].roofD:(ESTATES[IN-100]?shade(EST_T[ESTATES[IN-100].tier].roof,.72):'#68428f');ctx.fillRect(0,0,RW,4);
+  const nw=2*Math.max(1,Math.round(iw/10));
+  for(let k=0;k<nw;k++){const x=Math.round(RW*(k+0.5)/nw-8);ctx.fillStyle='#6a4a2a';ctx.fillRect(x-1,7,18,14);ctx.fillStyle='#9fd8ff';ctx.fillRect(x,8,16,12);ctx.fillStyle='#6a4a2a';ctx.fillRect(x+7,8,2,12);}
+  ctx.fillStyle='#6a4a2a';ctx.fillRect(0,32,2,RB-32);ctx.fillRect(RW-2,32,2,RB-32);
+  if(IFL===0){ctx.fillRect(0,RB,RW/2-16,4);ctx.fillRect(RW/2+16,RB,RW/2-16,4);ctx.fillStyle='#7a5230';ctx.fillRect(RW/2-16,RB,32,12);}
+  else{ctx.fillRect(0,RB,RW,4);}
+  // tangga
+  const stair=(tx,up)=>{const x=tx*T,y=2*T,cs=up?['#6a4a2a','#7f5a34','#946a3e','#a97a48']:['#a97a48','#946a3e','#7f5a34','#6a4a2a'];
+    ctx.fillStyle='#3a2412';ctx.fillRect(x-1,y-1,2*T+2,T+1);
+    for(let i=0;i<4;i++){ctx.fillStyle=cs[i];ctx.fillRect(x,y+i*4,2*T,4);ctx.fillStyle='rgba(0,0,0,.25)';ctx.fillRect(x,y+i*4+3,2*T,1);}
+    txt(up?'▲ Naik':'▼ Turun',x+T,y-3,'#fff',5);};
+  if(fl>1){if(IFL<fl-1)stair(1,true);if(IFL>0)stair(iw-3,false);txt('Lantai '+(IFL+1)+' / '+fl,RW/2,16,'#6a4a2a',6);}
+  const fls=P.hf[hk()]||[];
+  fls.filter(f=>FD[f.id].flat).forEach(drawF);
+  const L=fls.filter(f=>!FD[f.id].flat).map(f=>({y:(f.y+1)*T,f}));L.push({y:P.y,p:1});
   L.sort((a,b)=>a.y-b.y).forEach(o=>o.p?drawEntity(P,now):drawF(o.f));
-  txt('Keluar ▼',80,122,'#fff',6);
-  if(!estOwn(IN))txt(IN>=100?'Pratinjau rumah (belum dibeli)':'Rumah dijual (Agen Properti)',80,30,'#c0504d',6);
+  if(IFL===0)txt('Keluar ▼',RW/2,RB+10,'#fff',6);
+  if(!estOwn(IN))txt(IN>=100?'Pratinjau rumah (belum dibeli)':'Rumah dijual (Agen Properti)',RW/2,30,'#c0504d',6);
   ctx.restore();}
 function interactOld(){}
 
@@ -6055,7 +6075,11 @@ function update(dt){
       }
     }
   }
-  if(IN!==null){if(P.y>=118){P.x=OX;P.y=OY;IN=null;SH=null;MPdz=null;}for(const f of fx)f.t+=dt;fx=fx.filter(f=>f.t<f.life);return;}
+  if(IN!==null){const D=inDims();
+    if(IFL===0&&P.y>=D.RB+6){P.x=OX;P.y=OY;IN=null;SH=null;MPdz=null;IFL=0;}
+    else if(!SH&&D.fl>1){STCD=Math.max(0,STCD-dt);if(STCD<=0&&Math.floor((P.y-1)/T)===2){const ptx=Math.floor(P.x/T);
+      if(IFL<D.fl-1&&ptx>=1&&ptx<=2)goFloor(1);else if(IFL>0&&ptx>=D.iw-3&&ptx<=D.iw-2)goFloor(-1);}}
+    for(const f of fx)f.t+=dt;fx=fx.filter(f=>f.t<f.life);return;}
   if(!DG)npcs.forEach(n=>updateNpc(n,dt));
   mpTick(dt);
   mobs.forEach(m=>updateMob(m,dt));
